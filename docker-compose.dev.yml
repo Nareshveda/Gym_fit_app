@@ -1,0 +1,38 @@
+# docker-compose.dev.yml
+# Local dev overrides: bind-mounts source for hot reload, targets the Node
+# build stage for the frontend (instead of the production nginx stage), and
+# runs both apps in watch/reload mode.
+#
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  backend:
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://hsp_user:hsp_password@postgres:5432/hsp}
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+volumes:
+  frontend_node_modules:
