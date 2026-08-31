@@ -1,4 +1,5 @@
 """Pydantic request/response schemas for the attendance module."""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -19,6 +20,8 @@ class AttendanceResponse(BaseModel):
 
     id: int
     member_id: int
+    member_name: str
+    member_photo_url: str | None
     check_in_time: datetime
     check_out_time: datetime | None
     date: date

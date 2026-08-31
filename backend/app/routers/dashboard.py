@@ -1,4 +1,5 @@
 """Dashboard endpoints: aggregate overview stats for the home screen."""
+
 from __future__ import annotations
 
 import logging

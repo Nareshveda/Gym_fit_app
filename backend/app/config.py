@@ -3,10 +3,10 @@
 No secrets are hardcoded here per project rules (CLAUDE.md) — every sensitive
 value (DATABASE_URL, SECRET_KEY, ...) must be supplied via the environment.
 """
+
 from __future__ import annotations
 
 import logging
-from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     `.env` file (managed by DEVOPS-AGENT / not committed) when present.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     APP_NAME: str = "HSP - Gym Management"
     APP_VERSION: str = "1.0.0"
@@ -39,10 +41,18 @@ class Settings(BaseSettings):
     VITE_API_URL: str = "http://localhost:8000"
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
+    # Local disk storage for uploaded documents (equipment warranty/invoice
+    # files, etc.) — served back out via a StaticFiles mount at /uploads.
+    UPLOAD_DIR: str = "uploads"
+
     @property
-    def cors_origins(self) -> List[str]:
+    def cors_origins(self) -> list[str]:
         """Parse ALLOWED_ORIGINS into a list of origin strings for CORSMiddleware."""
-        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+        return [
+            origin.strip()
+            for origin in self.ALLOWED_ORIGINS.split(",")
+            if origin.strip()
+        ]
 
 
 settings = Settings()

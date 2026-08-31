@@ -4,12 +4,12 @@ Owned by BACKEND-AGENT (Fee Management module). Routers in
 ``app.routers.plans``, ``app.routers.subscriptions``, and
 ``app.routers.payments`` delegate all persistence and domain rules here.
 """
+
 from __future__ import annotations
 
 import logging
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ from app.schemas.plan import PlanCreate, PlanUpdate
 logger = logging.getLogger(__name__)
 
 # Calendar-day increment applied to a subscription's due_date per plan cadence.
-_DURATION_DAYS: Dict[DurationType, int] = {
+_DURATION_DAYS: dict[DurationType, int] = {
     DurationType.MONTHLY: 30,
     DurationType.QUARTERLY: 90,
     DurationType.YEARLY: 365,
@@ -55,7 +55,7 @@ def create_plan(db: Session, plan_data: PlanCreate) -> MembershipPlan:
     return plan
 
 
-def list_plans(db: Session, active_only: bool = False) -> List[MembershipPlan]:
+def list_plans(db: Session, active_only: bool = False) -> list[MembershipPlan]:
     """List membership plans, optionally restricted to active ones."""
     query = db.query(MembershipPlan)
     if active_only:
@@ -79,7 +79,9 @@ def update_plan(db: Session, plan_id: int, plan_data: PlanUpdate) -> MembershipP
         setattr(plan, field, value)
     db.commit()
     db.refresh(plan)
-    logger.info("Updated membership plan id=%s fields=%s", plan.id, list(updates.keys()))
+    logger.info(
+        "Updated membership plan id=%s fields=%s", plan.id, list(updates.keys())
+    )
     return plan
 
 
@@ -107,7 +109,9 @@ def _get_member_or_404(db: Session, member_id: int) -> Member:
 def _get_subscription_or_404(db: Session, subscription_id: int) -> MemberSubscription:
     """Fetch a subscription by id or raise NotFoundError."""
     subscription = (
-        db.query(MemberSubscription).filter(MemberSubscription.id == subscription_id).first()
+        db.query(MemberSubscription)
+        .filter(MemberSubscription.id == subscription_id)
+        .first()
     )
     if subscription is None:
         raise NotFoundError("Subscription")
@@ -115,7 +119,7 @@ def _get_subscription_or_404(db: Session, subscription_id: int) -> MemberSubscri
 
 
 def assign_subscription(
-    db: Session, member_id: int, plan_id: int, start_date: Optional[date] = None
+    db: Session, member_id: int, plan_id: int, start_date: date | None = None
 ) -> MemberSubscription:
     """Enroll a member in a membership plan, computing the initial due_date.
 
@@ -151,7 +155,7 @@ def assign_subscription(
     return subscription
 
 
-def list_member_subscriptions(db: Session, member_id: int) -> List[MemberSubscription]:
+def list_member_subscriptions(db: Session, member_id: int) -> list[MemberSubscription]:
     """List all subscriptions for a member, most recently started first."""
     _get_member_or_404(db, member_id)
     return (
@@ -172,8 +176,9 @@ def record_payment(
     amount: Decimal,
     method: PaymentMethod,
     recorded_by: int,
-    notes: Optional[str] = None,
-    payment_date: Optional[date] = None,
+    notes: str | None = None,
+    payment_date: date | None = None,
+    reference_number: str | None = None,
 ) -> Payment:
     """Record a payment and advance the subscription's due_date/status.
 
@@ -200,14 +205,21 @@ def record_payment(
         payment_date=payment_date or date.today(),
         payment_method=method,
         recorded_by=recorded_by,
+        reference_number=reference_number,
         notes=notes,
     )
     db.add(payment)
 
-    plan = db.query(MembershipPlan).filter(MembershipPlan.id == subscription.plan_id).first()
+    plan = (
+        db.query(MembershipPlan)
+        .filter(MembershipPlan.id == subscription.plan_id)
+        .first()
+    )
     if plan is not None:
         base_date = max(subscription.due_date, date.today())
-        subscription.due_date = base_date + timedelta(days=_duration_days(plan.duration_type))
+        subscription.due_date = base_date + timedelta(
+            days=_duration_days(plan.duration_type)
+        )
     subscription.status = SubscriptionStatus.ACTIVE
 
     db.commit()
@@ -225,11 +237,11 @@ def record_payment(
 
 def list_payments(
     db: Session,
-    member_id: Optional[int] = None,
-    date_from: Optional[date] = None,
-    date_to: Optional[date] = None,
-    status: Optional[SubscriptionStatus] = None,
-) -> List[Payment]:
+    member_id: int | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    status: SubscriptionStatus | None = None,
+) -> list[Payment]:
     """List payments, optionally filtered by member, payment-date range, and subscription status.
 
     ``status`` filters by the status of the payment's related subscription
@@ -249,7 +261,7 @@ def list_payments(
     return query.order_by(Payment.payment_date.desc()).all()
 
 
-def list_member_payments(db: Session, member_id: int) -> List[Payment]:
+def list_member_payments(db: Session, member_id: int) -> list[Payment]:
     """List all payments recorded for a specific member."""
     _get_member_or_404(db, member_id)
     return list_payments(db, member_id=member_id)
@@ -258,7 +270,7 @@ def list_member_payments(db: Session, member_id: int) -> List[Payment]:
 # --- Overdue tracking ------------------------------------------------------
 
 
-def list_overdue(db: Session) -> List[MemberSubscription]:
+def list_overdue(db: Session) -> list[MemberSubscription]:
     """Recompute and return subscriptions that are overdue or expiring soon.
 
     A subscription is:
@@ -287,7 +299,7 @@ def list_overdue(db: Session) -> List[MemberSubscription]:
         .all()
     )
 
-    result: List[MemberSubscription] = []
+    result: list[MemberSubscription] = []
     changed = False
     for subscription in candidates:
         if subscription.due_date < today:

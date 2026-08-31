@@ -1,8 +1,9 @@
 """Pydantic request/response schemas for the auth module."""
+
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -10,12 +11,16 @@ from app.models.user import UserRole
 
 
 class RegisterRequest(BaseModel):
-    """Payload to create a new staff account."""
+    """Payload to self-register a new account.
+
+    No `role` field on purpose: public self-registration always creates a
+    `staff` account. Granting a higher role (admin/owner/trainer) requires
+    going through the admin-gated `POST /api/v1/admin/users` endpoint.
+    """
 
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=1, max_length=150)
-    role: UserRole = UserRole.STAFF
 
 
 class LoginRequest(BaseModel):
@@ -32,7 +37,7 @@ class RefreshRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """Public representation of a User account."""
+    """Public representation of a User (staff) account."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,8 +46,26 @@ class UserResponse(BaseModel):
     full_name: str
     role: UserRole
     is_active: bool
+    avatar_url: str | None = None
     created_at: datetime
     updated_at: datetime
+    actor: Literal["staff"] = "staff"
+
+
+class MemberAuthResponse(BaseModel):
+    """Public representation of a Member's own login profile — deliberately
+    thin (id/name/code only, no address/medical/payment fields) since this
+    is what a member sees of themself, not what staff see of a member."""
+
+    id: int
+    email: EmailStr | None
+    full_name: str
+    member_code: str
+    role: Literal["member"] = "member"
+    is_active: bool
+    avatar_url: str | None = None
+    created_at: datetime
+    actor: Literal["member"] = "member"
 
 
 class TokenResponse(BaseModel):
@@ -51,10 +74,17 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    user: UserResponse
+    user: UserResponse | MemberAuthResponse
 
 
 class UpdateMeRequest(BaseModel):
-    """Payload to update the current user's own profile."""
+    """Payload to update the current actor's own profile (full name only —
+    a member's other fields are staff-managed, not self-service)."""
 
-    full_name: Optional[str] = Field(default=None, min_length=1, max_length=150)
+    full_name: str | None = Field(default=None, min_length=1, max_length=150)
+
+
+class SetMemberPasswordRequest(BaseModel):
+    """Payload for staff to grant/reset a member's self-service login password."""
+
+    password: str = Field(min_length=8, max_length=128)

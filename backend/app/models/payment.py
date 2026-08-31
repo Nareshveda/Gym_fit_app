@@ -1,12 +1,22 @@
 """Payment model — a recorded payment against a member's subscription."""
+
 from __future__ import annotations
 
 import enum
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Enum, ForeignKey, Numeric, String, func
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Numeric,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -22,6 +32,7 @@ class PaymentMethod(str, enum.Enum):
 
     CASH = "cash"
     CARD = "card"
+    UPI = "upi"
     BANK_TRANSFER = "bank_transfer"
     OTHER = "other"
 
@@ -39,7 +50,9 @@ class Payment(Base):
         ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True
     )
     subscription_id: Mapped[int] = mapped_column(
-        ForeignKey("member_subscriptions.id", ondelete="CASCADE"), nullable=False, index=True
+        ForeignKey("member_subscriptions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     payment_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
@@ -54,15 +67,16 @@ class Payment(Base):
     recorded_by: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
     )
-    notes: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     # Relationships
-    member: Mapped["Member"] = relationship(back_populates="payments")
-    subscription: Mapped["MemberSubscription"] = relationship(back_populates="payments")
-    recorded_by_user: Mapped["User"] = relationship(
+    member: Mapped[Member] = relationship(back_populates="payments")
+    subscription: Mapped[MemberSubscription] = relationship(back_populates="payments")
+    recorded_by_user: Mapped[User] = relationship(
         back_populates="recorded_payments", foreign_keys=[recorded_by]
     )
 

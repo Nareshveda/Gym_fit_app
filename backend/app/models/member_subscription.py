@@ -1,9 +1,10 @@
 """MemberSubscription model — a member's enrollment in a membership plan."""
+
 from __future__ import annotations
 
 import enum
 from datetime import date
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -35,7 +36,9 @@ class MemberSubscription(Base, TimestampMixin):
         ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True
     )
     plan_id: Mapped[int] = mapped_column(
-        ForeignKey("membership_plans.id", ondelete="RESTRICT"), nullable=False, index=True
+        ForeignKey("membership_plans.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
     )
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     due_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
@@ -51,9 +54,9 @@ class MemberSubscription(Base, TimestampMixin):
     )
 
     # Relationships
-    member: Mapped["Member"] = relationship(back_populates="subscriptions")
-    plan: Mapped["MembershipPlan"] = relationship(back_populates="subscriptions")
-    payments: Mapped[List["Payment"]] = relationship(
+    member: Mapped[Member] = relationship(back_populates="subscriptions")
+    plan: Mapped[MembershipPlan] = relationship(back_populates="subscriptions")
+    payments: Mapped[list[Payment]] = relationship(
         back_populates="subscription", cascade="all, delete-orphan"
     )
 

@@ -1,3 +1,29 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+[tool.ruff.lint]
+# DTZ011 (date.today()) is a false positive for this app: attendance days,
+# subscription due dates, and dashboard stats are calendar-day concepts for
+# a single physical gym location, not timestamps needing timezone awareness.
+ignore = ["DTZ011"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection idiom requires Depends()/Query()/etc. as
+# argument defaults; this is not the mutable-default-argument bug B008 warns
+# about, so treat these (and our own require_role() wrapper) as immutable.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Security",
+    "app.dependencies.require_role",
+]

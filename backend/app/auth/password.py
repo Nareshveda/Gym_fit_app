@@ -1,4 +1,5 @@
 """Password hashing and verification using passlib's bcrypt scheme."""
+
 from __future__ import annotations
 
 import logging

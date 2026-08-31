@@ -1,15 +1,16 @@
 """Payment endpoints: record payments, list/filter payments, overdue subscriptions."""
+
 from __future__ import annotations
 
 import logging
 from datetime import date
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_current_user, get_db
-from app.models.member_subscription import SubscriptionStatus
+from app.models.member_subscription import MemberSubscription, SubscriptionStatus
+from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate, PaymentResponse
 from app.schemas.subscription import SubscriptionResponse
 from app.services import fee_service
@@ -19,17 +20,21 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["payments"])
 
 
-@router.get("/payments", response_model=List[PaymentResponse])
+@router.get("/payments", response_model=list[PaymentResponse])
 async def get_payments(
-    member_id: Optional[int] = Query(default=None),
-    date_from: Optional[date] = Query(default=None, description="Inclusive lower bound on payment_date."),
-    date_to: Optional[date] = Query(default=None, description="Inclusive upper bound on payment_date."),
-    status: Optional[SubscriptionStatus] = Query(
+    member_id: int | None = Query(default=None),
+    date_from: date | None = Query(
+        default=None, description="Inclusive lower bound on payment_date."
+    ),
+    date_to: date | None = Query(
+        default=None, description="Inclusive upper bound on payment_date."
+    ),
+    status: SubscriptionStatus | None = Query(
         default=None, description="Filter by the related subscription's status."
     ),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
-) -> List[PaymentResponse]:
+) -> list[Payment]:
     """List payments, optionally filtered by member, date range, and subscription status."""
     return fee_service.list_payments(
         db, member_id=member_id, date_from=date_from, date_to=date_to, status=status
@@ -41,7 +46,7 @@ async def create_payment(
     payload: PaymentCreate,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
-) -> PaymentResponse:
+) -> Payment:
     """Record a payment against a member's subscription; advances the subscription's due_date."""
     return fee_service.record_payment(
         db,
@@ -52,23 +57,24 @@ async def create_payment(
         recorded_by=current_user.id,
         notes=payload.notes,
         payment_date=payload.payment_date,
+        reference_number=payload.reference_number,
     )
 
 
-@router.get("/members/{member_id}/payments", response_model=List[PaymentResponse])
+@router.get("/members/{member_id}/payments", response_model=list[PaymentResponse])
 async def get_member_payments(
     member_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
-) -> List[PaymentResponse]:
+) -> list[Payment]:
     """List all payments recorded for a specific member."""
     return fee_service.list_member_payments(db, member_id)
 
 
-@router.get("/payments/overdue", response_model=List[SubscriptionResponse])
+@router.get("/payments/overdue", response_model=list[SubscriptionResponse])
 async def get_overdue_subscriptions(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
-) -> List[SubscriptionResponse]:
+) -> list[MemberSubscription]:
     """List subscriptions that are overdue or expiring within 7 days."""
     return fee_service.list_overdue(db)

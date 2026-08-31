@@ -1,9 +1,10 @@
 """Exercise model — an entry in the shared exercise library (post-MVP)."""
+
 from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,14 +40,16 @@ class Exercise(Base):
         index=True,
     )
     muscle_group: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
-    video_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     # Relationships
-    routine_exercises: Mapped[List["RoutineExercise"]] = relationship(back_populates="exercise")
+    routine_exercises: Mapped[list[RoutineExercise]] = relationship(
+        back_populates="exercise"
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<Exercise id={self.id} name={self.name!r} category={self.category}>"

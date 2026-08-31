@@ -3,6 +3,7 @@
 Routers and services raise these instead of `HTTPException` so error handling
 stays consistent across modules; handlers are wired into the app in main.py.
 """
+
 from __future__ import annotations
 
 import logging
@@ -16,7 +17,12 @@ logger = logging.getLogger(__name__)
 class AppException(Exception):
     """Base class for all custom application exceptions."""
 
-    def __init__(self, message: str, code: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR) -> None:
+    def __init__(
+        self,
+        message: str,
+        code: str,
+        status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ) -> None:
         """Store a human-readable message, a machine-readable code, and the HTTP status."""
         self.message = message
         self.code = code
@@ -28,7 +34,9 @@ class NotFoundError(AppException):
     """Raised when a requested resource does not exist (maps to HTTP 404)."""
 
     def __init__(self, resource: str = "Resource") -> None:
-        super().__init__(f"{resource} not found", "NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        super().__init__(
+            f"{resource} not found", "NOT_FOUND", status.HTTP_404_NOT_FOUND
+        )
 
 
 class ConflictError(AppException):
@@ -42,7 +50,9 @@ class ValidationError(AppException):
     """Raised for domain-level validation failures not caught by Pydantic (HTTP 422)."""
 
     def __init__(self, message: str = "Validation failed") -> None:
-        super().__init__(message, "VALIDATION_ERROR", status.HTTP_422_UNPROCESSABLE_ENTITY)
+        super().__init__(
+            message, "VALIDATION_ERROR", status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
 
 
 class UnauthorizedError(AppException):
@@ -61,7 +71,13 @@ class ForbiddenError(AppException):
 
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     """Convert an AppException into a consistent JSON error response."""
-    logger.warning("AppException on %s %s: [%s] %s", request.method, request.url.path, exc.code, exc.message)
+    logger.warning(
+        "AppException on %s %s: [%s] %s",
+        request.method,
+        request.url.path,
+        exc.code,
+        exc.message,
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": exc.code, "message": exc.message}},
@@ -73,5 +89,10 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"error": {"code": "INTERNAL_SERVER_ERROR", "message": "An unexpected error occurred"}},
+        content={
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred",
+            }
+        },
     )

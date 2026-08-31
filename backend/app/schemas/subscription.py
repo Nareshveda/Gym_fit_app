@@ -1,8 +1,8 @@
 """Pydantic schemas for member subscriptions."""
+
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,8 +14,9 @@ class SubscriptionCreate(BaseModel):
     """Payload to assign a membership plan to a member."""
 
     plan_id: int = Field(..., gt=0)
-    start_date: Optional[date] = Field(
-        default=None, description="Subscription start date; defaults to today when omitted."
+    start_date: date | None = Field(
+        default=None,
+        description="Subscription start date; defaults to today when omitted.",
     )
 
 
@@ -32,4 +33,4 @@ class SubscriptionResponse(BaseModel):
     status: SubscriptionStatus
     created_at: datetime
     updated_at: datetime
-    plan: Optional[PlanResponse] = None
+    plan: PlanResponse | None = None

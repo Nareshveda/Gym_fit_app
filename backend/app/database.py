@@ -4,17 +4,17 @@
 ``app.config.settings``, itself backed by ``pydantic-settings``) — no
 credentials are hardcoded here, per project rules (CLAUDE.md).
 """
+
 from __future__ import annotations
 
 import logging
-from typing import Generator
+from collections.abc import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import settings
-from app.models.base import Base
 
 logger = logging.getLogger(__name__)
 

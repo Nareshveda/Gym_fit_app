@@ -4,6 +4,7 @@ SQLAlchemy 2.0 style (``Mapped`` / ``mapped_column``) is used throughout the
 ``app.models`` package per project conventions (CLAUDE.md: type hints
 required everywhere).
 """
+
 from __future__ import annotations
 
 from datetime import datetime

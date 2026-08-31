@@ -1,15 +1,22 @@
 """Business logic for the admin module: staff listing, role/status updates, and stats."""
+
 from __future__ import annotations
 
 import logging
-from typing import List
 
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.auth.password import hash_password
 from app.exceptions import ConflictError, NotFoundError
 from app.models.user import User, UserRole
-from app.schemas.admin import AdminStatsResponse, RoleCount, UpdateUserRequest
+from app.schemas.admin import (
+    AdminCreateUserRequest,
+    AdminStatsResponse,
+    RoleCount,
+    UpdateUserRequest,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +24,44 @@ logger = logging.getLogger(__name__)
 _ADMIN_ACCESS_ROLES = {UserRole.OWNER, UserRole.ADMIN}
 
 
-def list_users(db: Session) -> List[User]:
+def list_users(db: Session) -> list[User]:
     """Return every staff account, ordered by id."""
     return db.query(User).order_by(User.id).all()
 
 
-def update_user(db: Session, user_id: int, data: UpdateUserRequest, current_user: User) -> User:
+def create_user(db: Session, data: AdminCreateUserRequest) -> User:
+    """Create a new staff/trainer/admin account (owner/admin only).
+
+    Raises:
+        ConflictError: if `email` is already in use.
+    """
+    user = User(
+        email=data.email,
+        hashed_password=hash_password(data.password),
+        full_name=data.full_name,
+        phone=data.phone,
+        location_id=data.location_id,
+        role=data.role,
+    )
+    db.add(user)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.warning(
+            "Admin user creation conflict: email=%s already exists", data.email
+        )
+        raise ConflictError("An account with this email already exists")
+    db.refresh(user)
+    logger.info(
+        "Admin-created user id=%s email=%s role=%s", user.id, user.email, user.role
+    )
+    return user
+
+
+def update_user(
+    db: Session, user_id: int, data: UpdateUserRequest, current_user: User
+) -> User:
     """Update a staff account's role and/or active status.
 
     Raises `NotFoundError` if no user with `user_id` exists. Raises
@@ -37,20 +76,35 @@ def update_user(db: Session, user_id: int, data: UpdateUserRequest, current_user
 
     if user.id == current_user.id:
         resulting_role = data.role if data.role is not None else user.role
-        resulting_active = data.is_active if data.is_active is not None else user.is_active
+        resulting_active = (
+            data.is_active if data.is_active is not None else user.is_active
+        )
         if resulting_role not in _ADMIN_ACCESS_ROLES or not resulting_active:
-            logger.warning("User id=%s attempted to self-demote/deactivate via admin panel", user.id)
-            raise ConflictError("You cannot remove your own admin access or deactivate your own account")
+            logger.warning(
+                "User id=%s attempted to self-demote/deactivate via admin panel",
+                user.id,
+            )
+            raise ConflictError(
+                "You cannot remove your own admin access or deactivate your own account"
+            )
 
     if data.role is not None:
         user.role = data.role
     if data.is_active is not None:
         user.is_active = data.is_active
+    if data.location_id is not None:
+        user.location_id = data.location_id
 
     db.add(user)
     db.commit()
     db.refresh(user)
-    logger.info("User id=%s updated by user id=%s (role=%s, is_active=%s)", user.id, current_user.id, user.role, user.is_active)
+    logger.info(
+        "User id=%s updated by user id=%s (role=%s, is_active=%s)",
+        user.id,
+        current_user.id,
+        user.role,
+        user.is_active,
+    )
     return user
 
 

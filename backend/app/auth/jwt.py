@@ -5,12 +5,13 @@ Access tokens expire after ``ACCESS_TOKEN_EXPIRE_MINUTES``; refresh tokens
 after ``REFRESH_TOKEN_EXPIRE_DAYS``. Each token embeds a ``type`` claim
 ("access" or "refresh") so one cannot be used in place of the other.
 """
+
 from __future__ import annotations
 
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any
 
 from jose import JWTError, jwt
 
@@ -23,7 +24,9 @@ ACCESS_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TYPE = "refresh"
 
 
-def _create_token(data: Dict[str, Any], expires_delta: timedelta, token_type: str) -> str:
+def _create_token(
+    data: dict[str, Any], expires_delta: timedelta, token_type: str
+) -> str:
     """Encode a JWT embedding `data`, an expiry, a `type` claim, and a unique `jti`.
 
     The `jti` (JWT ID) guarantees each token is a distinct string even when
@@ -33,25 +36,32 @@ def _create_token(data: Dict[str, Any], expires_delta: timedelta, token_type: st
     """
     to_encode = dict(data)
     now = datetime.now(timezone.utc)
-    to_encode.update({"exp": now + expires_delta, "iat": now, "jti": uuid.uuid4().hex, "type": token_type})
+    to_encode.update(
+        {
+            "exp": now + expires_delta,
+            "iat": now,
+            "jti": uuid.uuid4().hex,
+            "type": token_type,
+        }
+    )
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def create_access_token(data: Dict[str, Any]) -> str:
+def create_access_token(data: dict[str, Any]) -> str:
     """Create a short-lived access token embedding `data` (typically {"sub": user_id})."""
     return _create_token(
         data, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES), ACCESS_TOKEN_TYPE
     )
 
 
-def create_refresh_token(data: Dict[str, Any]) -> str:
+def create_refresh_token(data: dict[str, Any]) -> str:
     """Create a long-lived refresh token embedding `data` (typically {"sub": user_id})."""
     return _create_token(
         data, timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS), REFRESH_TOKEN_TYPE
     )
 
 
-def decode_token(token: str) -> Dict[str, Any]:
+def decode_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT's signature and expiry, returning its claims.
 
     Raises `UnauthorizedError` if the token is missing, malformed, expired,

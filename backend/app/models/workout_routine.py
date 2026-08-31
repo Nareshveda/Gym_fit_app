@@ -1,8 +1,9 @@
 """WorkoutRoutine model — a routine assigned to a member (post-MVP)."""
+
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -29,16 +30,18 @@ class WorkoutRoutine(Base, TimestampMixin):
         ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True
     )
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    notes: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     # Relationships
-    member: Mapped["Member"] = relationship(back_populates="workout_routines")
-    assigned_by_user: Mapped["User"] = relationship(
+    member: Mapped[Member] = relationship(back_populates="workout_routines")
+    assigned_by_user: Mapped[User] = relationship(
         back_populates="assigned_routines", foreign_keys=[assigned_by]
     )
-    routine_exercises: Mapped[List["RoutineExercise"]] = relationship(
-        back_populates="routine", cascade="all, delete-orphan", order_by="RoutineExercise.order"
+    routine_exercises: Mapped[list[RoutineExercise]] = relationship(
+        back_populates="routine",
+        cascade="all, delete-orphan",
+        order_by="RoutineExercise.order",
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
