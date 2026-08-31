@@ -1,0 +1,61 @@
+# Render Blueprint — deploys HSP as three services from this repo:
+# a free Postgres database, a FastAPI backend, and a static-hosted
+# Vite frontend. Connecting this repo to a Render account and applying
+# this Blueprint is a one-time manual step in Render's dashboard.
+#
+# Free-tier caveats (Render, not this app):
+# - The backend web service spins down after ~15 min idle and takes
+#   30-60s to wake back up on the next request.
+# - The database is deleted after 90 days on the free plan unless
+#   upgraded.
+# - The backend has no persistent disk on the free plan, so anything
+#   written to `UPLOAD_DIR` (avatars, equipment documents) is wiped on
+#   every deploy/restart.
+databases:
+  - name: hsp-db
+    databaseName: hsp
+    user: hsp_user
+    plan: free
+
+services:
+  - type: web
+    name: hsp-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hsp-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+      - key: ALLOWED_ORIGINS
+        value: https://hsp-frontend.onrender.com
+      - key: UPLOAD_DIR
+        value: uploads
+
+  - type: web
+    name: hsp-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://hsp-backend.onrender.com
+    routes:
+      - source: /*
+        destination: /index.html
+        matchType: rewrite
