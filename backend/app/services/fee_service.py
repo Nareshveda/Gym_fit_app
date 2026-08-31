@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 _DURATION_DAYS: dict[DurationType, int] = {
     DurationType.MONTHLY: 30,
     DurationType.QUARTERLY: 90,
+    DurationType.HALF_YEARLY: 182,
     DurationType.YEARLY: 365,
 }
 

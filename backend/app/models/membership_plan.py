@@ -20,6 +20,7 @@ class DurationType(str, enum.Enum):
 
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
+    HALF_YEARLY = "half_yearly"
     YEARLY = "yearly"
 
 

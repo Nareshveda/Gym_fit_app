@@ -5,7 +5,7 @@
  * (reconciled post-Phase-2 against the real backend contract).
  */
 
-export type DurationType = 'monthly' | 'quarterly' | 'yearly';
+export type DurationType = 'monthly' | 'quarterly' | 'half_yearly' | 'yearly';
 
 export interface MembershipPlan {
   id: number;

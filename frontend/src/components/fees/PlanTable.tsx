@@ -14,6 +14,7 @@ interface PlanTableProps {
 const durationLabel: Record<MembershipPlan['duration_type'], string> = {
   monthly: 'Monthly',
   quarterly: 'Quarterly',
+  half_yearly: 'Half Yearly',
   yearly: 'Yearly',
 };
 
