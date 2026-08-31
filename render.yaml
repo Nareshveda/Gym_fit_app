@@ -54,7 +54,10 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://hsp-backend.onrender.com
+        # "hsp-backend" was already taken on Render, so the actual backend
+        # service got suffixed to this — check the Render dashboard for the
+        # current value if the backend's name ever changes again.
+        value: https://hsp-backend-vf2c.onrender.com
     routes:
       - type: rewrite
         source: /*
