@@ -1,4 +1,5 @@
 """Tests for membership plan CRUD (create/list/update/deactivate)."""
+
 from __future__ import annotations
 
 
@@ -42,7 +43,9 @@ def test_deactivate_plan_preserves_it_but_hides_from_active_only(client, staff_h
     assert deactivate.status_code == 200
     assert deactivate.json()["is_active"] is False
 
-    active_only = client.get("/api/v1/plans/", params={"active_only": True}, headers=staff_headers)
+    active_only = client.get(
+        "/api/v1/plans/", params={"active_only": True}, headers=staff_headers
+    )
     assert plan_id not in [p["id"] for p in active_only.json()]
 
     all_plans = client.get("/api/v1/plans/", headers=staff_headers)

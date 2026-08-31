@@ -5,6 +5,7 @@ FastAPI TestClient wired to it via a `get_db` dependency override.
 since `app.config.Settings` requires them at import time (no defaults, per
 CLAUDE.md: never hardcode secrets / no hardcoded DB credentials).
 """
+
 from __future__ import annotations
 
 import os
@@ -12,6 +13,7 @@ import os
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-pytest-only")
 
+import itertools
 from datetime import date
 from decimal import Decimal
 
@@ -25,10 +27,6 @@ from app.auth.jwt import create_access_token
 from app.auth.password import hash_password
 from app.database import get_db
 from app.main import app
-from app.models.base import Base
-from app.models.member import Member, MemberStatus
-from app.models.membership_plan import DurationType, MembershipPlan
-from app.models.user import User, UserRole
 
 # Import every model module so its table is registered on Base.metadata
 # before create_all runs (models are otherwise never imported directly).
@@ -36,11 +34,17 @@ from app.models import (  # noqa: F401
     attendance,
     exercise,
     member_subscription,
+    member_vital,
     payment,
     refresh_token,
     routine_exercise,
+    staff_attendance,
     workout_routine,
 )
+from app.models.base import Base
+from app.models.member import Member, MemberStatus, TrainingCategory
+from app.models.membership_plan import DurationType, MembershipPlan
+from app.models.user import User, UserRole
 
 
 @pytest.fixture()
@@ -72,7 +76,9 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
-def make_user(db_session, role: UserRole = UserRole.STAFF, email: str = "staff@example.com") -> User:
+def make_user(
+    db_session, role: UserRole = UserRole.STAFF, email: str = "staff@example.com"
+) -> User:
     """Persist and return a staff user with a known password ("Password123!")."""
     user = User(
         email=email,
@@ -88,8 +94,23 @@ def make_user(db_session, role: UserRole = UserRole.STAFF, email: str = "staff@e
 
 
 def auth_headers(user: User) -> dict[str, str]:
-    """Build an Authorization header carrying a valid access token for `user`."""
+    """Build an Authorization header carrying a valid access token for `user`.
+
+    Deliberately omits the `actor` claim (unlike real staff logins, which
+    always set `actor: "staff"`) so the whole suite doubles as a regression
+    test for `get_current_actor`'s backward-compat default — every one of
+    these 100+ passing tests exercises a token shaped like one issued before
+    the member-login feature existed.
+    """
     token = create_access_token({"sub": str(user.id), "role": user.role.value})
+    return {"Authorization": f"Bearer {token}"}
+
+
+def member_auth_headers(member: Member) -> dict[str, str]:
+    """Build an Authorization header carrying a valid *member*-actor access token."""
+    token = create_access_token(
+        {"sub": str(member.id), "role": "member", "actor": "member"}
+    )
     return {"Authorization": f"Bearer {token}"}
 
 
@@ -133,18 +154,24 @@ def trainer_headers(trainer_user) -> dict[str, str]:
     return auth_headers(trainer_user)
 
 
+_member_code_counter = itertools.count(1)
+
+
 def make_member(db_session, enrolled_by: int, **overrides) -> Member:
     """Persist and return a Member, with sensible defaults for required fields."""
-    defaults = dict(
-        full_name="Jane Doe",
-        email=None,
-        phone="555-0100",
-        date_of_birth=date(1995, 1, 1),
-        gender="female",
-        join_date=date.today(),
-        status=MemberStatus.ACTIVE,
-        enrolled_by=enrolled_by,
-    )
+    defaults = {
+        "member_code": f"TST-{next(_member_code_counter):04d}",
+        "full_name": "Jane Doe",
+        "email": None,
+        "phone": "555-0100",
+        "birth_month": 1,
+        "birth_year": 1995,
+        "gender": "female",
+        "join_date": date.today(),
+        "status": MemberStatus.ACTIVE,
+        "training_category": TrainingCategory.GROUP_TRAINING,
+        "enrolled_by": enrolled_by,
+    }
     defaults.update(overrides)
     member = Member(**defaults)
     db_session.add(member)
@@ -153,14 +180,26 @@ def make_member(db_session, enrolled_by: int, **overrides) -> Member:
     return member
 
 
-def make_plan(db_session, duration_type: DurationType = DurationType.MONTHLY, **overrides) -> MembershipPlan:
+@pytest.fixture()
+def upload_dir(tmp_path, monkeypatch):
+    """Redirects `settings.UPLOAD_DIR` to a pytest-managed temp directory, so
+    upload tests never write into the real project `backend/uploads/` folder."""
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path))
+    return tmp_path
+
+
+def make_plan(
+    db_session, duration_type: DurationType = DurationType.MONTHLY, **overrides
+) -> MembershipPlan:
     """Persist and return a MembershipPlan."""
-    defaults = dict(
-        name="Monthly Basic",
-        duration_type=duration_type,
-        price=Decimal("29.99"),
-        is_active=True,
-    )
+    defaults = {
+        "name": "Monthly Basic",
+        "duration_type": duration_type,
+        "price": Decimal("29.99"),
+        "is_active": True,
+    }
     defaults.update(overrides)
     plan = MembershipPlan(**defaults)
     db_session.add(plan)
