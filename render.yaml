@@ -56,6 +56,6 @@ services:
       - key: VITE_API_URL
         value: https://hsp-backend.onrender.com
     routes:
-      - source: /*
+      - type: rewrite
+        source: /*
         destination: /index.html
-        matchType: rewrite
