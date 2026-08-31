@@ -1,9 +1,5 @@
 import api from './api';
-import type {
-  AttendanceListResponse,
-  AttendanceRecord,
-  CheckInPayload,
-} from '../types/attendance';
+import type { AttendanceRecord, CheckInPayload } from '../types/attendance';
 
 /**
  * Axios calls for the Attendance module: `/api/v1/attendance/*` plus the
@@ -24,14 +20,14 @@ export const attendanceService = {
 
   /** Attendance records for a given day (defaults to today when omitted). */
   async list(date?: string): Promise<AttendanceRecord[]> {
-    const { data } = await api.get<AttendanceListResponse>('/attendance', {
+    const { data } = await api.get<AttendanceRecord[]>('/attendance', {
       params: date ? { date } : undefined,
     });
-    return data.items;
+    return data;
   },
 
   async getMemberAttendance(memberId: number): Promise<AttendanceRecord[]> {
-    const { data } = await api.get<AttendanceListResponse>(`/members/${memberId}/attendance`);
-    return data.items;
+    const { data } = await api.get<AttendanceRecord[]>(`/members/${memberId}/attendance`);
+    return data;
   },
 };

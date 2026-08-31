@@ -9,7 +9,7 @@
 
 export type UUID = string;
 
-export type Role = 'admin' | 'staff' | 'trainer' | 'member';
+export type Role = 'owner' | 'admin' | 'staff' | 'trainer' | 'member';
 
 export interface User {
   id: UUID;

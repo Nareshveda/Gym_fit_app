@@ -30,7 +30,15 @@ function fillAndSubmit(email: string, password: string) {
 
 describe('LoginForm', () => {
   it('logs in with the entered credentials and navigates to /dashboard', async () => {
-    const login = vi.fn().mockResolvedValue(undefined);
+    const login = vi.fn().mockResolvedValue({
+      id: '1',
+      email: 'user@example.com',
+      full_name: 'Test User',
+      role: 'staff',
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      actor: 'staff',
+    });
     mockedUseAuth.mockReturnValue({ login } as unknown as ReturnType<typeof useAuth>);
 
     renderLoginForm();

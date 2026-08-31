@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -6,17 +5,9 @@ import { OverdueTable } from '../components/fees/OverdueTable';
 import { GlassCard } from '../components/ui/GlassCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { feeService } from '../services/feeService';
 import type { MemberSubscription } from '../types/fee';
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    const body = error.response?.data as { error?: { message?: string }; detail?: string } | undefined;
-    if (typeof body?.error?.message === 'string') return body.error.message;
-    if (typeof body?.detail === 'string') return body.detail;
-  }
-  return fallback;
-}
 
 export default function OverduePaymentsPage() {
   const [subscriptions, setSubscriptions] = useState<MemberSubscription[]>([]);

@@ -28,7 +28,7 @@ export interface ButtonProps
 const variantClasses: Record<ButtonVariant, string> = {
   default: 'bg-primary text-primary-foreground hover:bg-primary/90',
   gradient:
-    'bg-gradient-brand text-white shadow-md hover:shadow-lg hover:shadow-primary/20',
+    'bg-gradient-brand text-background shadow-md hover:shadow-lg hover:shadow-primary/20',
   outline:
     'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
   ghost: 'bg-transparent hover:bg-accent hover:text-accent-foreground',

@@ -1,23 +1,27 @@
-import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MemberCard } from '../components/members/MemberCard';
+import { SetMemberPasswordDialog } from '../components/members/SetMemberPasswordDialog';
 import { AnimatedList } from '../components/ui/AnimatedList';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { GlassCard } from '../components/ui/GlassCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { downloadAttendancePdf } from '../lib/attendancePdf';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
+import { attendanceService } from '../services/attendanceService';
+import { locationService } from '../services/locationService';
 import { memberService } from '../services/memberService';
+import type { Location } from '../types/location';
 import type { Member } from '../types/member';
 
-function extractErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    return detail ?? error.message;
-  }
-  return 'Something went wrong. Please try again.';
-}
+const monthNames = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const GENERIC_ERROR = 'Something went wrong. Please try again.';
 
 function formatDate(value: string | undefined): string {
   if (!value) return '—';
@@ -36,12 +40,23 @@ const genderLabels: Record<Member['gender'], string> = {
 export default function MemberDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const enrollmentWarning = (location.state as { warning?: string } | null)?.warning ?? null;
 
   const [member, setMember] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  useEffect(() => {
+    locationService.list().then(setLocations).catch(() => setLocations([]));
+  }, []);
 
   const loadMember = useCallback(async () => {
     if (!id) return;
@@ -51,7 +66,7 @@ export default function MemberDetailPage() {
       const data = await memberService.get(id);
       setMember(data);
     } catch (err) {
-      setError(extractErrorMessage(err));
+      setError(extractErrorMessage(err, GENERIC_ERROR));
     } finally {
       setIsLoading(false);
     }
@@ -68,10 +83,46 @@ export default function MemberDetailPage() {
       await memberService.remove(id);
       navigate('/members');
     } catch (err) {
-      setError(extractErrorMessage(err));
+      setError(extractErrorMessage(err, GENERIC_ERROR));
       setIsDeleteOpen(false);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleSetPassword = async (password: string) => {
+    if (!id) return;
+    setPasswordError(null);
+    setIsSettingPassword(true);
+    try {
+      await memberService.setCredentials(id, { password });
+      setIsPasswordDialogOpen(false);
+    } catch (err) {
+      setPasswordError(extractErrorMessage(err, GENERIC_ERROR));
+    } finally {
+      setIsSettingPassword(false);
+    }
+  };
+
+  const handleExportAttendancePdf = async () => {
+    if (!id || !member) return;
+    setIsExportingPdf(true);
+    try {
+      const records = await attendanceService.getMemberAttendance(Number(id));
+      downloadAttendancePdf({
+        title: `Attendance Report — ${member.full_name}`,
+        subtitle: `Member code: ${member.member_code}`,
+        rows: records.map((record) => ({
+          date: record.date,
+          checkIn: record.check_in_time,
+          checkOut: record.check_out_time,
+        })),
+        fileName: `attendance-${member.member_code}.pdf`,
+      });
+    } catch (err) {
+      setError(extractErrorMessage(err, GENERIC_ERROR));
+    } finally {
+      setIsExportingPdf(false);
     }
   };
 
@@ -109,9 +160,27 @@ export default function MemberDetailPage() {
 
       {!isLoading && !error && member && (
         <div className="flex flex-col gap-6">
+          {enrollmentWarning && (
+            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
+              {enrollmentWarning}
+            </p>
+          )}
+
           <MemberCard member={member} />
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(true)}>
+              Login Access
+            </Button>
+            <Button type="button" variant="outline" disabled={isExportingPdf} onClick={() => void handleExportAttendancePdf()}>
+              {isExportingPdf ? 'Preparing PDF…' : 'Attendance Report (PDF)'}
+            </Button>
+            <Link
+              to={`/members/${member.id}/vitals`}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-gradient-brand px-4 text-sm font-semibold text-background shadow-md transition-shadow hover:shadow-lg hover:shadow-primary/20"
+            >
+              Vitals &amp; Progress
+            </Link>
             <Link
               to={`/members/${member.id}/edit`}
               className="inline-flex h-10 items-center justify-center rounded-xl border border-input px-4 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -129,12 +198,24 @@ export default function MemberDetailPage() {
                 <h3 className="mb-4 text-lg font-semibold">Personal Information</h3>
                 <dl className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs uppercase text-muted-foreground">Date of Birth</dt>
-                    <dd>{formatDate(member.date_of_birth)}</dd>
+                    <dt className="text-xs uppercase text-muted-foreground">Member Code</dt>
+                    <dd className="font-mono">{member.member_code}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Month/Year of Birth</dt>
+                    <dd>{monthNames[member.birth_month - 1]} {member.birth_year}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Age</dt>
+                    <dd>{member.age}</dd>
                   </div>
                   <div>
                     <dt className="text-xs uppercase text-muted-foreground">Gender</dt>
                     <dd>{genderLabels[member.gender]}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">WhatsApp Number</dt>
+                    <dd>{member.whatsapp_number || '—'}</dd>
                   </div>
                   <div className="sm:col-span-2">
                     <dt className="text-xs uppercase text-muted-foreground">Address</dt>
@@ -155,6 +236,23 @@ export default function MemberDetailPage() {
                   </div>
                 </dl>
               </GlassCard>,
+              <GlassCard key="training">
+                <h3 className="mb-4 text-lg font-semibold">Plan &amp; Training</h3>
+                <dl className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Plan</dt>
+                    <dd>{member.current_plan_name ?? 'No plan assigned'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Goal</dt>
+                    <dd>{member.goal || '—'}</dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs uppercase text-muted-foreground">Medical History</dt>
+                    <dd className="whitespace-pre-wrap">{member.medical_history || '—'}</dd>
+                  </div>
+                </dl>
+              </GlassCard>,
               <GlassCard key="membership">
                 <h3 className="mb-4 text-lg font-semibold">Membership</h3>
                 <dl className="grid gap-4 sm:grid-cols-2">
@@ -165,6 +263,16 @@ export default function MemberDetailPage() {
                   <div>
                     <dt className="text-xs uppercase text-muted-foreground">Status</dt>
                     <dd className="capitalize">{member.status}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Branch / Location</dt>
+                    <dd>
+                      {locations.find((location) => location.id === member.location_id)?.name || 'Unassigned'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase text-muted-foreground">Referred By</dt>
+                    <dd>{member.referred_by_name || '—'}</dd>
                   </div>
                 </dl>
               </GlassCard>,
@@ -188,6 +296,15 @@ export default function MemberDetailPage() {
           </Button>
         </div>
       </Dialog>
+
+      <SetMemberPasswordDialog
+        open={isPasswordDialogOpen}
+        memberEmail={member?.email ?? null}
+        submitting={isSettingPassword}
+        error={passwordError}
+        onClose={() => setIsPasswordDialogOpen(false)}
+        onSubmit={(password) => void handleSetPassword(password)}
+      />
     </PageWrapper>
   );
 }

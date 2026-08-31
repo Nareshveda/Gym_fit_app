@@ -30,6 +30,16 @@ export const authService = {
     return data;
   },
 
+  /** Upload (or replace) the current actor's own profile picture — .jpg/.jpeg/.png, up to 10 MB. */
+  async uploadAvatar(file: File): Promise<AuthUser> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post<AuthUser>('/auth/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
   async logout(): Promise<void> {
     try {
       await api.post('/auth/logout');

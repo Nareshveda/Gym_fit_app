@@ -1,5 +1,5 @@
 import api from './api';
-import type { AdminStats, AdminUser, UpdateUserRolePayload } from '../types/admin';
+import type { AdminStats, AdminUser, CreateStaffPayload, UpdateUserRolePayload } from '../types/admin';
 
 /**
  * Admin API calls. Every endpoint here requires an "owner" or "admin"
@@ -14,6 +14,11 @@ export const adminService = {
 
   async updateUser(id: number, payload: UpdateUserRolePayload): Promise<AdminUser> {
     const { data } = await api.put<AdminUser>(`/admin/users/${id}`, payload);
+    return data;
+  },
+
+  async createStaff(payload: CreateStaffPayload): Promise<AdminUser> {
+    const { data } = await api.post<AdminUser>('/admin/users', payload);
     return data;
   },
 

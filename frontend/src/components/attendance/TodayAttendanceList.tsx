@@ -72,14 +72,14 @@ export function TodayAttendanceList({ refreshSignal }: TodayAttendanceListProps)
       {actionError && <p className="mb-3 text-sm text-destructive">{actionError}</p>}
       <AnimatedList className="divide-y divide-border rounded-xl border border-border">
         {records.map((record) => {
-          const isCheckedOut = record.check_out_at !== null;
+          const isCheckedOut = record.check_out_time !== null;
           return (
             <div key={record.id} className="flex items-center justify-between gap-3 p-3">
               <div className="min-w-0">
                 <p className="truncate font-medium text-foreground">{record.member_name}</p>
                 <p className="text-xs text-muted-foreground">
-                  In: {formatTime(record.check_in_at)}
-                  {isCheckedOut && record.check_out_at ? ` · Out: ${formatTime(record.check_out_at)}` : ''}
+                  In: {formatTime(record.check_in_time)}
+                  {isCheckedOut && record.check_out_time ? ` · Out: ${formatTime(record.check_out_time)}` : ''}
                 </p>
               </div>
               {isCheckedOut ? (

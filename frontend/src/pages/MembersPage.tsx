@@ -1,15 +1,17 @@
-import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MemberTable } from '../components/members/MemberTable';
 import { Dialog } from '../components/ui/Dialog';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { cn } from '../lib/cn';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { locationService } from '../services/locationService';
 import { memberService } from '../services/memberService';
+import type { Location } from '../types/location';
 import type { Member, MemberStatus } from '../types/member';
 
 const statusFilterOptions: { value: MemberStatus | 'all'; label: string }[] = [
@@ -19,22 +21,31 @@ const statusFilterOptions: { value: MemberStatus | 'all'; label: string }[] = [
   { value: 'expired', label: 'Expired' },
 ];
 
-function extractErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    return detail ?? error.message;
-  }
-  return 'Something went wrong. Please try again.';
-}
+const GENERIC_ERROR = 'Something went wrong. Please try again.';
 
 export default function MembersPage() {
+  // Seeded once from the URL so a dashboard card (e.g. "Active Members" ->
+  // /members?status=active, a branch bar -> /members?location_id=3) lands
+  // on a pre-filtered list rather than the unfiltered default.
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get('status') as MemberStatus | null;
+  const initialLocationId = searchParams.get('location_id');
+
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<MemberStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<MemberStatus | 'all'>(initialStatus ?? 'all');
+  const [locationFilter, setLocationFilter] = useState<number | 'all'>(
+    initialLocationId ? Number(initialLocationId) : 'all',
+  );
+  const [locations, setLocations] = useState<Location[]>([]);
   const [memberPendingDelete, setMemberPendingDelete] = useState<Member | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    locationService.list().then(setLocations).catch(() => setLocations([]));
+  }, []);
 
   const loadMembers = useCallback(async () => {
     setIsLoading(true);
@@ -43,14 +54,15 @@ export default function MembersPage() {
       const data = await memberService.list({
         search: search.trim() || undefined,
         status: statusFilter === 'all' ? undefined : statusFilter,
+        location_id: locationFilter === 'all' ? undefined : locationFilter,
       });
       setMembers(data);
     } catch (err) {
-      setError(extractErrorMessage(err));
+      setError(extractErrorMessage(err, GENERIC_ERROR));
     } finally {
       setIsLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, locationFilter]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -67,7 +79,7 @@ export default function MembersPage() {
       setMemberPendingDelete(null);
       await loadMembers();
     } catch (err) {
-      setError(extractErrorMessage(err));
+      setError(extractErrorMessage(err, GENERIC_ERROR));
     } finally {
       setIsDeleting(false);
     }
@@ -77,12 +89,13 @@ export default function MembersPage() {
   // the `search`/`status` query params.
   const visibleMembers = members.filter((member) => {
     const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
+    const matchesLocation = locationFilter === 'all' || member.location_id === locationFilter;
     const query = search.trim().toLowerCase();
     const matchesSearch =
       query.length === 0 ||
       member.full_name.toLowerCase().includes(query) ||
-      member.email.toLowerCase().includes(query);
-    return matchesStatus && matchesSearch;
+      (member.email ?? '').toLowerCase().includes(query);
+    return matchesStatus && matchesLocation && matchesSearch;
   });
 
   return (
@@ -94,7 +107,7 @@ export default function MembersPage() {
         <Link
           to="/members/new"
           className={cn(
-            'inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 text-sm font-semibold text-white shadow-md transition-shadow hover:shadow-lg hover:shadow-primary/20',
+            'inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-brand px-4 text-sm font-semibold text-background shadow-md transition-shadow hover:shadow-lg hover:shadow-primary/20',
           )}
         >
           Enroll Member
@@ -124,6 +137,24 @@ export default function MembersPage() {
             {statusFilterOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="w-full sm:w-56">
+          <label htmlFor="location-filter" className="mb-1.5 block text-sm font-medium text-foreground">
+            Branch / Location
+          </label>
+          <select
+            id="location-filter"
+            className="flex h-10 w-full rounded-xl border-2 border-input bg-background px-4 py-2 text-sm outline-none transition-colors focus:border-primary"
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+          >
+            <option value="all">All Locations</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
               </option>
             ))}
           </select>

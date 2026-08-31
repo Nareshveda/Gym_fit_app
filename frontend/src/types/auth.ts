@@ -5,14 +5,24 @@
  */
 import type { Role } from './index';
 
-/** Authenticated user shape returned by `/api/v1/auth/me` and friends. */
+/**
+ * Authenticated actor shape returned by `/api/v1/auth/me` and friends.
+ * Two actor types share this shape: a staff account (`actor: 'staff'`,
+ * `role` one of owner/admin/staff/trainer) or a member with self-service
+ * login granted (`actor: 'member'`, `role: 'member'`, `member_code` set).
+ */
 export interface AuthUser {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
   role: Role;
   is_active: boolean;
   created_at: string;
+  actor: 'staff' | 'member';
+  /** Only present when `actor === 'member'`. */
+  member_code?: string;
+  /** Path (relative to the API origin, not `/api/v1`) the profile picture is served from, or null/absent if none. */
+  avatar_url?: string | null;
 }
 
 export interface LoginPayload {

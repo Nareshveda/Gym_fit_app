@@ -11,19 +11,35 @@ export type MemberStatus = 'active' | 'inactive' | 'expired';
 
 export type MemberGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
 
+export type TrainingCategory = 'personal_training' | 'group_training';
+
 export interface Member {
   id: string;
+  /** Permanent, human-readable code like "PT-0001" / "GT-0001" — generated server-side, never regenerated. */
+  member_code: string;
   full_name: string;
-  email: string;
+  email: string | null;
   phone: string;
-  date_of_birth: string;
+  whatsapp_number: string | null;
+  birth_month: number;
+  birth_year: number;
+  /** Computed server-side from `birth_month`/`birth_year` — read-only. */
+  age: number;
   gender: MemberGender;
-  address: string;
-  emergency_contact_name: string;
-  emergency_contact_phone: string;
+  address: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
   photo_url: string | null;
+  training_category: TrainingCategory;
+  medical_history: string | null;
+  goal: string | null;
+  location_id: number | null;
+  referred_by_name: string | null;
+  referred_by_member_id: number | null;
   join_date: string;
   status: MemberStatus;
+  /** Name of the member's most recently assigned plan (the actual admin-created Plan), or null if none. */
+  current_plan_name: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -33,12 +49,20 @@ export interface MemberCreatePayload {
   full_name: string;
   email: string;
   phone: string;
-  date_of_birth: string;
+  whatsapp_number?: string | null;
+  birth_month: number;
+  birth_year: number;
   gender: MemberGender;
   address: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
   photo_url?: string | null;
+  training_category: TrainingCategory;
+  medical_history?: string | null;
+  goal?: string | null;
+  location_id?: number | null;
+  referred_by_name?: string | null;
+  referred_by_member_id?: number | null;
   join_date: string;
   status?: MemberStatus;
 }
@@ -46,10 +70,16 @@ export interface MemberCreatePayload {
 /** Payload for `PUT /api/v1/members/{id}` — every field is optional. */
 export type MemberUpdatePayload = Partial<MemberCreatePayload>;
 
+/** Payload for `PUT /api/v1/members/{id}/credentials` — grants/resets self-service login. */
+export interface SetMemberCredentialsPayload {
+  password: string;
+}
+
 /** Query params supported by `GET /api/v1/members`. */
 export interface MemberListParams {
   search?: string;
   status?: MemberStatus;
+  location_id?: number;
 }
 
 /** Envelope shape if the backend paginates the member list. */

@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { LoginForm } from '../components/auth/LoginForm';
 import { GlassCard } from '../components/ui/GlassCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
@@ -9,7 +8,8 @@ export default function LoginPage() {
   return (
     <PageWrapper>
       <MeshBackground />
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
+        <img src="/brand/hsp-logo.png" alt="HSP — Harisportsperformance" className="h-24 w-auto rounded-xl" />
         <GlassCard className="w-full max-w-sm">
           <TextReveal as="h1" className="mb-1 text-2xl">
             Welcome back
@@ -19,10 +19,7 @@ export default function LoginPage() {
           </p>
           <LoginForm />
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            No account?{' '}
-            <Link to="/register" className="font-medium text-primary hover:underline">
-              Create one
-            </Link>
+            Don't have an account? Ask an owner or admin to set one up for you.
           </p>
         </GlassCard>
       </div>

@@ -22,6 +22,7 @@ const user = {
   role: 'staff' as const,
   is_active: true,
   created_at: '2026-01-01T00:00:00Z',
+  actor: 'staff' as const,
 };
 
 beforeEach(() => {

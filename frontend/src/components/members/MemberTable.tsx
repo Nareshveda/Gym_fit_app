@@ -39,10 +39,12 @@ export function MemberTable({ members, onDelete }: MemberTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>Code</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Phone</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Plan</TableHead>
           <TableHead>Join Date</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -50,6 +52,7 @@ export function MemberTable({ members, onDelete }: MemberTableProps) {
       <TableBody>
         {members.map((member) => (
           <TableRow key={member.id}>
+            <TableCell className="font-mono text-muted-foreground">{member.member_code}</TableCell>
             <TableCell className="font-medium">
               <Link to={`/members/${member.id}`} className="hover:text-primary">
                 {member.full_name}
@@ -60,6 +63,7 @@ export function MemberTable({ members, onDelete }: MemberTableProps) {
             <TableCell>
               <Badge variant={statusVariant[member.status]}>{member.status}</Badge>
             </TableCell>
+            <TableCell className="text-muted-foreground">{member.current_plan_name ?? '—'}</TableCell>
             <TableCell className="text-muted-foreground">
               {formatDate(member.join_date)}
             </TableCell>

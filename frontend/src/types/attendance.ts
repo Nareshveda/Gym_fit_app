@@ -40,18 +40,10 @@ export interface AttendanceRecord {
   member_id: number;
   member_name: string;
   member_photo_url: string | null;
-  check_in_at: string;
-  check_out_at: string | null;
-  method: AttendanceMethod;
-}
-
-/** Response envelope for `GET /api/v1/attendance` and the member-scoped history endpoint. */
-export interface AttendanceListResponse {
-  items: AttendanceRecord[];
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
+  check_in_time: string;
+  check_out_time: string | null;
+  date: string;
+  created_at: string;
 }
 
 /** Payload for `POST /api/v1/attendance/check-in`. */

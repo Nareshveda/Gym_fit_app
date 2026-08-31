@@ -11,7 +11,8 @@ export interface MembershipPlan {
   id: number;
   name: string;
   duration_type: DurationType;
-  price: number;
+  /** Serialized as a JSON string by the backend (Decimal), not a number. */
+  price: string;
   description: string | null;
   is_active: boolean;
   created_at: string;
@@ -49,18 +50,22 @@ export interface SubscriptionCreatePayload {
   start_date?: string;
 }
 
-export type PaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'other';
+export type PaymentMethod = 'cash' | 'card' | 'upi' | 'bank_transfer' | 'other';
 
 export interface Payment {
   id: number;
   member_id: number;
   subscription_id: number;
-  amount: number;
+  /** Serialized as a JSON string by the backend (Decimal), not a number. */
+  amount: string;
   payment_date: string;
   payment_method: PaymentMethod;
   recorded_by: number;
+  reference_number: string | null;
   notes: string | null;
   created_at: string;
+  /** The subscription (and its admin-created Plan) this payment was made against. */
+  subscription?: MemberSubscription | null;
 }
 
 /** Payload for `POST /api/v1/payments`. */
@@ -70,5 +75,6 @@ export interface RecordPaymentPayload {
   amount: number;
   payment_method: PaymentMethod;
   payment_date?: string;
+  reference_number?: string | null;
   notes?: string | null;
 }

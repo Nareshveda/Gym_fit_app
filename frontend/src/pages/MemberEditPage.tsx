@@ -1,21 +1,15 @@
-import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MemberForm, type MemberFormValues } from '../components/members/MemberForm';
 import { Button } from '../components/ui/Button';
 import { GlassCard } from '../components/ui/GlassCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { memberService } from '../services/memberService';
 import type { Member } from '../types/member';
 
-function extractErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    return detail ?? error.message;
-  }
-  return 'Something went wrong. Please try again.';
-}
+const GENERIC_ERROR = 'Something went wrong. Please try again.';
 
 export default function MemberEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +28,7 @@ export default function MemberEditPage() {
       const data = await memberService.get(id);
       setMember(data);
     } catch (err) {
-      setLoadError(extractErrorMessage(err));
+      setLoadError(extractErrorMessage(err, GENERIC_ERROR));
     } finally {
       setIsLoading(false);
     }
@@ -51,15 +45,23 @@ export default function MemberEditPage() {
       await memberService.update(id, values);
       navigate(`/members/${id}`);
     } catch (err) {
-      setSubmitError(extractErrorMessage(err));
+      setSubmitError(extractErrorMessage(err, GENERIC_ERROR));
     }
   };
 
   return (
     <PageWrapper>
-      <TextReveal as="h1" className="mb-6 text-2xl">
-        Edit Member
-      </TextReveal>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <TextReveal as="h1" className="text-2xl">
+          Edit Member
+        </TextReveal>
+        <Link
+          to={id ? `/members/${id}` : '/members'}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          Back to Member
+        </Link>
+      </div>
 
       {isLoading && (
         <GlassCard>

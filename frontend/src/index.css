@@ -4,64 +4,40 @@
 
 @layer base {
   :root {
-    /* Core surface tokens */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 12%;
+    /* Bright, energetic multi-color palette — light surfaces with vivid
+       orange/violet accents, replacing the earlier black+gold dark theme.
+       --background is deliberately more saturated than a near-white so
+       --card (pure white) reads as a distinct surface, not a blend. */
+    --background: 250 45% 93%;
+    --foreground: 240 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 12%;
+    --card-foreground: 240 25% 15%;
 
-    --primary: 262 83% 58%;
+    --primary: 22 95% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 330 81% 60%;
+    --secondary: 262 83% 58%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 240 30% 95%;
+    --muted-foreground: 240 10% 45%;
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 10% 12%;
+    --accent: 22 95% 95%;
+    --accent-foreground: 22 70% 30%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 262 83% 58%;
+    --border: 240 20% 88%;
+    --input: 240 20% 85%;
+    --ring: 22 95% 55%;
 
     --radius: 0.75rem;
 
-    /* Brand gradient endpoints (purple -> pink) */
-    --brand-from: 262 83% 58%;
-    --brand-to: 330 81% 60%;
-  }
-
-  :root[data-theme='dark'] {
-    --background: 240 10% 6%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 9%;
-    --card-foreground: 0 0% 98%;
-
-    --primary: 262 83% 66%;
-    --primary-foreground: 240 10% 6%;
-
-    --secondary: 330 81% 66%;
-    --secondary-foreground: 240 10% 6%;
-
-    --muted: 240 6% 16%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 240 6% 16%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 6% 20%;
-    --input: 240 6% 20%;
-    --ring: 262 83% 66%;
+    /* Brand gradient endpoints (orange -> magenta) for CTAs/highlights. */
+    --brand-from: 22 95% 55%;
+    --brand-to: 330 85% 58%;
   }
 
   * {
@@ -71,12 +47,16 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    /* Bright, light theme (no dark mode toggle) — tells native controls
+       (select dropdown popups, scrollbars) to render light, not the OS
+       default, which could otherwise mismatch our light surfaces. */
+    color-scheme: light;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+    @apply bg-white/90 backdrop-blur-lg border border-white shadow-xl shadow-primary/10;
   }
 
   .text-gradient-brand {

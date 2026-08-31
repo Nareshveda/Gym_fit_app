@@ -1,22 +1,14 @@
 import { Loader2, Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { PlanForm } from '../components/fees/PlanForm';
 import { PlanTable } from '../components/fees/PlanTable';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GradientButton } from '../components/ui/GradientButton';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { feeService } from '../services/feeService';
 import type { MembershipPlan, PlanCreatePayload } from '../types/fee';
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    if (typeof detail === 'string') return detail;
-  }
-  return fallback;
-}
 
 export default function PlansPage() {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
@@ -68,7 +60,7 @@ export default function PlansPage() {
     }
   };
 
-  const handleFormSubmit = async (payload: PlanCreatePayload) => {
+  const handleFormSubmit = async (payload: PlanCreatePayload & { is_active?: boolean }) => {
     setSubmitting(true);
     setFormError(null);
     try {

@@ -39,6 +39,9 @@ export function MemberCard({ member, className }: MemberCardProps) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold">{member.full_name}</h2>
+          <Badge variant="outline" className="font-mono">
+            {member.member_code}
+          </Badge>
           <Badge variant={statusVariant[member.status]}>{member.status}</Badge>
         </div>
         <p className="truncate text-sm text-muted-foreground">{member.email}</p>

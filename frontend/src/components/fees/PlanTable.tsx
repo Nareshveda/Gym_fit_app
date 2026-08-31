@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react';
+import { formatINR } from '../../lib/currency';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
@@ -15,14 +16,6 @@ const durationLabel: Record<MembershipPlan['duration_type'], string> = {
   quarterly: 'Quarterly',
   yearly: 'Yearly',
 };
-
-function formatPrice(price: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(price);
-  } catch {
-    return price.toFixed(2);
-  }
-}
 
 export function PlanTable({ plans, onEdit, onDelete }: PlanTableProps) {
   return (
@@ -45,7 +38,7 @@ export function PlanTable({ plans, onEdit, onDelete }: PlanTableProps) {
                 <div className="text-xs text-muted-foreground">{plan.description}</div>
               )}
             </TableCell>
-            <TableCell>{formatPrice(plan.price)}</TableCell>
+            <TableCell>{formatINR(plan.price)}</TableCell>
             <TableCell>{durationLabel[plan.duration_type]}</TableCell>
             <TableCell>
               <Badge variant={plan.is_active ? 'success' : 'outline'}>

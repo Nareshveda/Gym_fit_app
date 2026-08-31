@@ -11,7 +11,7 @@ interface PlanFormProps {
   submitting: boolean;
   error: string | null;
   onClose: () => void;
-  onSubmit: (payload: PlanCreatePayload) => void;
+  onSubmit: (payload: PlanCreatePayload & { is_active?: boolean }) => void;
 }
 
 interface FormState {
@@ -51,11 +51,15 @@ export function PlanForm({ open, plan, submitting, error, onClose, onSubmit }: P
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const payload: PlanCreatePayload = {
+    // `is_active` only applies to editing an existing plan — the checkbox
+    // otherwise updated local state with nothing ever reading it back out,
+    // so toggling it on an existing plan silently did nothing.
+    const payload: PlanCreatePayload & { is_active?: boolean } = {
       name: form.name.trim(),
       description: form.description.trim() ? form.description.trim() : null,
       price: Number(form.price),
       duration_type: form.duration_type,
+      ...(plan ? { is_active: form.is_active } : {}),
     };
     onSubmit(payload);
   };

@@ -20,8 +20,8 @@ export function LoginForm() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await login({ email, password });
-      navigate('/dashboard');
+      const me = await login({ email, password });
+      navigate(me.actor === 'member' ? '/portal' : '/dashboard');
     } catch (err) {
       setError(getAuthErrorMessage(err as AuthError, 'Invalid email or password.'));
     } finally {

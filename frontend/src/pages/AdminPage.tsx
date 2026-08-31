@@ -57,9 +57,17 @@ export default function AdminPage() {
         <TextReveal as="h1" className="text-2xl">
           Admin
         </TextReveal>
-        <Link to="/admin/users">
-          <Button variant="gradient">Manage Staff</Button>
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/admin/locations">
+            <Button variant="outline">Locations</Button>
+          </Link>
+          <Link to="/inventory">
+            <Button variant="outline">Inventory</Button>
+          </Link>
+          <Link to="/admin/users">
+            <Button variant="gradient">Manage Staff</Button>
+          </Link>
+        </div>
       </div>
 
       <GlassCard>

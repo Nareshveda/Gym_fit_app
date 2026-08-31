@@ -5,6 +5,7 @@ import type {
   MemberListParams,
   MemberUpdatePayload,
   PaginatedMembers,
+  SetMemberCredentialsPayload,
 } from '../types/member';
 
 /**
@@ -37,5 +38,11 @@ export const memberService = {
 
   async remove(id: string): Promise<void> {
     await api.delete(`/members/${id}`);
+  },
+
+  /** Grant or reset this member's self-service login password (staff-only). */
+  async setCredentials(id: string, payload: SetMemberCredentialsPayload): Promise<Member> {
+    const { data } = await api.put<Member>(`/members/${id}/credentials`, payload);
+    return data;
   },
 };

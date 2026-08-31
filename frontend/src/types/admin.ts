@@ -14,6 +14,7 @@ export interface AdminUser {
   id: number;
   email: string;
   full_name: string;
+  phone: string | null;
   role: AdminRole;
   is_active: boolean;
 }
@@ -22,6 +23,15 @@ export interface AdminUser {
 export interface UpdateUserRolePayload {
   role?: AdminRole;
   is_active?: boolean;
+}
+
+/** Payload for POST /api/v1/admin/users (owner/admin only). */
+export interface CreateStaffPayload {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string | null;
+  role: AdminRole;
 }
 
 /** Staff count for a single role, part of the admin stats response. */

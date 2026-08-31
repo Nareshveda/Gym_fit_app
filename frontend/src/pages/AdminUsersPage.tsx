@@ -5,7 +5,9 @@ import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
 import { UserTable } from '../components/admin/UserTable';
 import { useAuth } from '../context/AuthContext';
+import { downloadAttendancePdf } from '../lib/attendancePdf';
 import { adminService } from '../services/adminService';
+import { staffAttendanceService } from '../services/staffAttendanceService';
 import type { AdminRole, AdminUser } from '../types/admin';
 
 /** Staff management page: lists all staff accounts with role/status controls. */
@@ -17,6 +19,7 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
+  const [exportingUserId, setExportingUserId] = useState<number | null>(null);
 
   const loadUsers = useCallback(async () => {
     setIsLoading(true);
@@ -65,15 +68,45 @@ export default function AdminUsersPage() {
     [applyUpdate],
   );
 
+  const handleExportAttendance = useCallback(async (targetUser: AdminUser) => {
+    setExportingUserId(targetUser.id);
+    setError(null);
+    try {
+      const records = await staffAttendanceService.list({ staffId: targetUser.id });
+      downloadAttendancePdf({
+        title: `Attendance Report — ${targetUser.full_name}`,
+        subtitle: `Role: ${targetUser.role}`,
+        rows: records.map((record) => ({
+          date: record.date,
+          checkIn: record.check_in_time,
+          checkOut: record.check_out_time,
+        })),
+        fileName: `attendance-${targetUser.full_name.replace(/\s+/g, '-').toLowerCase()}.pdf`,
+      });
+    } catch {
+      setError('Failed to export this attendance report.');
+    } finally {
+      setExportingUserId(null);
+    }
+  }, []);
+
   return (
     <PageWrapper>
       <div className="mb-6 flex items-center justify-between">
         <TextReveal as="h1" className="text-2xl">
           Staff Management
         </TextReveal>
-        <Link to="/admin" className="text-sm font-medium text-primary hover:underline">
-          Back to Admin
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/admin/staff/new"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-gradient-brand px-4 text-sm font-semibold text-background shadow-md transition-shadow hover:shadow-lg hover:shadow-primary/20"
+          >
+            Add Staff
+          </Link>
+          <Link to="/admin" className="text-sm font-medium text-primary hover:underline">
+            Back to Admin
+          </Link>
+        </div>
       </div>
 
       <GlassCard>
@@ -87,8 +120,10 @@ export default function AdminUsersPage() {
             users={users}
             currentUserId={currentUserId}
             savingUserId={savingUserId}
+            exportingUserId={exportingUserId}
             onRoleChange={handleRoleChange}
             onToggleActive={handleToggleActive}
+            onExportAttendance={(target) => void handleExportAttendance(target)}
           />
         )}
       </GlassCard>

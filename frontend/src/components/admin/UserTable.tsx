@@ -8,12 +8,22 @@ interface UserTableProps {
   users: AdminUser[];
   currentUserId: number | null;
   savingUserId: number | null;
+  exportingUserId: number | null;
   onRoleChange: (userId: number, role: AdminRole) => void;
   onToggleActive: (userId: number, nextIsActive: boolean) => void;
+  onExportAttendance: (user: AdminUser) => void;
 }
 
-/** Staff management table: role selector + activate/deactivate per row. */
-export function UserTable({ users, currentUserId, savingUserId, onRoleChange, onToggleActive }: UserTableProps) {
+/** Staff management table: role selector + activate/deactivate + attendance report per row. */
+export function UserTable({
+  users,
+  currentUserId,
+  savingUserId,
+  exportingUserId,
+  onRoleChange,
+  onToggleActive,
+  onExportAttendance,
+}: UserTableProps) {
   if (users.length === 0) {
     return <p className="text-muted-foreground">No staff accounts found.</p>;
   }
@@ -53,14 +63,24 @@ export function UserTable({ users, currentUserId, savingUserId, onRoleChange, on
                 </Badge>
               </TableCell>
               <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isSaving || isSelf}
-                  onClick={() => onToggleActive(user.id, !user.is_active)}
-                >
-                  {user.is_active ? 'Deactivate' : 'Activate'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isSaving || isSelf}
+                    onClick={() => onToggleActive(user.id, !user.is_active)}
+                  >
+                    {user.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={exportingUserId === user.id}
+                    onClick={() => onExportAttendance(user)}
+                  >
+                    {exportingUserId === user.id ? 'Preparing…' : 'Attendance (PDF)'}
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           );

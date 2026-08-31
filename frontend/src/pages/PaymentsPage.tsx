@@ -1,6 +1,5 @@
 import { Loader2, Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import { PaymentTable } from '../components/fees/PaymentTable';
 import { RecordPaymentForm } from '../components/fees/RecordPaymentForm';
@@ -8,16 +7,9 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { GradientButton } from '../components/ui/GradientButton';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { feeService } from '../services/feeService';
 import type { Payment, RecordPaymentPayload } from '../types/fee';
-
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
-    if (typeof detail === 'string') return detail;
-  }
-  return fallback;
-}
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
