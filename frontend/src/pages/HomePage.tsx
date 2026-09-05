@@ -11,9 +11,9 @@ const highlights = [
 
 // One bold word per showcase slot, in order — vivid gradient + glow color pair each.
 const showcaseWords = [
-  { text: 'GRIND', gradient: 'from-orange-400 via-red-500 to-yellow-400', glow: '#fb923c' },
-  { text: 'LIFT', gradient: 'from-fuchsia-500 via-purple-500 to-indigo-400', glow: '#c026d3' },
-  { text: 'HUSTLE', gradient: 'from-lime-400 via-emerald-400 to-cyan-400', glow: '#34d399' },
+  { text: 'CONQUER', gradient: 'from-red-600 via-rose-500 to-amber-400', glow: '#ef4444' },
+  { text: 'FORGE', gradient: 'from-amber-500 via-orange-600 to-red-600', glow: '#f59e0b' },
+  { text: 'UNLEASH', gradient: 'from-cyan-400 via-blue-500 to-violet-600', glow: '#38bdf8' },
   { text: 'RISE', gradient: 'from-pink-500 via-rose-400 to-orange-400', glow: '#fb7185' },
 ];
 
