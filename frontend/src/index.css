@@ -62,4 +62,33 @@
   .text-gradient-brand {
     @apply bg-gradient-brand bg-clip-text text-transparent;
   }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes gradient-x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px var(--glow-color, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px var(--glow-color, transparent));
+  }
 }

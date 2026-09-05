@@ -1,14 +1,20 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 import { MeshBackground } from '../components/layout/MeshBackground';
 import { GlassCard } from '../components/ui/GlassCard';
-import { useAuth } from '../hooks/useAuth';
 
 const highlights = [
   { title: 'Personal Training', body: 'One-on-one coaching built around your goals, tracked from day one.' },
   { title: 'Group Training', body: 'High-energy group sessions that keep momentum and community front and center.' },
   { title: 'Progress You Can See', body: 'Vitals logged at every check-in, charted so you can watch the trend, not just the number.' },
+];
+
+// One bold word per showcase slot, in order — vivid gradient + glow color pair each.
+const showcaseWords = [
+  { text: 'GRIND', gradient: 'from-orange-400 via-red-500 to-yellow-400', glow: '#fb923c' },
+  { text: 'LIFT', gradient: 'from-fuchsia-500 via-purple-500 to-indigo-400', glow: '#c026d3' },
+  { text: 'HUSTLE', gradient: 'from-lime-400 via-emerald-400 to-cyan-400', glow: '#34d399' },
+  { text: 'RISE', gradient: 'from-pink-500 via-rose-400 to-orange-400', glow: '#fb7185' },
 ];
 
 // Drop up to 4 images/videos into src/assets/home-media/ and they show up here
@@ -34,14 +40,6 @@ while (mediaShowcase.length < 4) {
 }
 
 export default function HomePage() {
-  const { isAuthenticated, user } = useAuth();
-
-  // Signing in navigates straight to the dashboard/portal (see LoginForm) —
-  // this page is NOT force-redirected away for an authenticated visitor, so
-  // clicking the logo from inside the app genuinely lands here instead of
-  // bouncing straight back to where you started.
-  const appHome = user?.actor === 'member' ? '/portal' : '/dashboard';
-
   return (
     <div className="min-h-screen">
       <MeshBackground />
@@ -56,62 +54,49 @@ export default function HomePage() {
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Move. Build. <span className="text-gradient-brand">Sprint.</span>
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Harisportsperformance gym management — enrollment, attendance, vitals tracking, and
-            fee management, all in one place.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <Link
-            to={isAuthenticated ? appHome : '/login'}
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-brand px-6 text-base font-semibold text-background shadow-md transition-shadow hover:shadow-lg hover:shadow-primary/20"
-          >
-            {isAuthenticated ? (user?.actor === 'member' ? 'Go to My Portal' : 'Go to Dashboard') : 'Sign In'}
-          </Link>
-          <Link
-            to="/contact"
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-input px-6 text-base font-semibold transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            Contact Us
-          </Link>
-        </div>
-
         <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
-          {mediaShowcase.map((item, index) =>
-            item.src ? (
-              item.isVideo ? (
-                <video
-                  key={item.src}
-                  src={item.src}
-                  muted
-                  autoPlay
-                  loop
-                  playsInline
-                  aria-label={`Gym highlight video ${index + 1}`}
-                  className="aspect-[3/4] w-full rounded-2xl object-cover shadow-md"
-                />
-              ) : (
-                <img
-                  key={item.src}
-                  src={item.src}
-                  alt={`Gym highlight ${index + 1}`}
-                  className="aspect-[3/4] w-full rounded-2xl object-cover shadow-md"
-                />
-              )
-            ) : (
-              <div
-                key={`placeholder-${index}`}
-                className="flex aspect-[3/4] w-full items-center justify-center rounded-2xl bg-gradient-brand p-4 text-center text-sm font-medium text-background shadow-md"
-              >
-                {`Image / Video ${index + 1}`}
+          {mediaShowcase.map((item, index) => {
+            const word = showcaseWords[index];
+            return (
+              <div key={item.src || `placeholder-${index}`} className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md">
+                {item.src ? (
+                  item.isVideo ? (
+                    <video
+                      src={item.src}
+                      muted
+                      autoPlay
+                      loop
+                      playsInline
+                      aria-label={`Gym highlight video ${index + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <img
+                      src={item.src}
+                      alt={`Gym highlight ${index + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  )
+                ) : (
+                  <div className="h-full w-full bg-gradient-brand" />
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/15 to-transparent" />
+
+                {word && (
+                  <motion.span
+                    className={`animate-gradient-x animate-glow-pulse absolute inset-x-2 top-3 whitespace-nowrap bg-gradient-to-r bg-clip-text text-center font-black uppercase leading-none tracking-tight text-transparent ${word.gradient}`}
+                    style={{ fontSize: 'clamp(1.5rem, 6vw, 3.25rem)', '--glow-color': word.glow } as React.CSSProperties}
+                    initial={{ opacity: 0, y: -24, scale: 0.85 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 + index * 0.2, ease: 'easeOut' }}
+                  >
+                    {word.text}
+                  </motion.span>
+                )}
               </div>
-            ),
-          )}
+            );
+          })}
         </div>
 
         <div className="mt-10 grid w-full gap-6 sm:grid-cols-3">
