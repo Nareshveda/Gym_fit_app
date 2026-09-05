@@ -11,6 +11,28 @@ const highlights = [
   { title: 'Progress You Can See', body: 'Vitals logged at every check-in, charted so you can watch the trend, not just the number.' },
 ];
 
+// Drop up to 4 images/videos into src/assets/home-media/ and they show up here
+// automatically after the next build — no code change needed. Files are shown
+// in filename order, so prefix them (01-hero.jpg, 02-class.mp4, ...) to control
+// the order. Supported: png/jpg/jpeg/webp/gif for images, mp4/webm for video.
+const mediaFiles = import.meta.glob('../assets/home-media/*.{png,jpg,jpeg,webp,gif,mp4,webm}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
+const mediaShowcase = Object.keys(mediaFiles)
+  .sort()
+  .slice(0, 4)
+  .map((path) => ({
+    src: mediaFiles[path],
+    isVideo: /\.(mp4|webm)$/i.test(path),
+  }));
+
+while (mediaShowcase.length < 4) {
+  mediaShowcase.push({ src: '', isVideo: false });
+}
+
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
 
@@ -57,6 +79,39 @@ export default function HomePage() {
           >
             Contact Us
           </Link>
+        </div>
+
+        <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
+          {mediaShowcase.map((item, index) =>
+            item.src ? (
+              item.isVideo ? (
+                <video
+                  key={item.src}
+                  src={item.src}
+                  muted
+                  autoPlay
+                  loop
+                  playsInline
+                  aria-label={`Gym highlight video ${index + 1}`}
+                  className="aspect-[3/4] w-full rounded-2xl object-cover shadow-md"
+                />
+              ) : (
+                <img
+                  key={item.src}
+                  src={item.src}
+                  alt={`Gym highlight ${index + 1}`}
+                  className="aspect-[3/4] w-full rounded-2xl object-cover shadow-md"
+                />
+              )
+            ) : (
+              <div
+                key={`placeholder-${index}`}
+                className="flex aspect-[3/4] w-full items-center justify-center rounded-2xl bg-gradient-brand p-4 text-center text-sm font-medium text-background shadow-md"
+              >
+                {`Image / Video ${index + 1}`}
+              </div>
+            ),
+          )}
         </div>
 
         <div className="mt-10 grid w-full gap-6 sm:grid-cols-3">
