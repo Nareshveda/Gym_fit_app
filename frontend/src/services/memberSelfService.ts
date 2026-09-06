@@ -1,5 +1,5 @@
 import api from './api';
-import type { AttendanceRecord } from '../types/attendance';
+import type { AttendanceRecord, Streak } from '../types/attendance';
 import type { Vital, VitalsDashboard } from '../types/vital';
 
 /**
@@ -20,6 +20,11 @@ export const memberSelfService = {
 
   async getMyVitalsDashboard(): Promise<VitalsDashboard> {
     const { data } = await api.get<VitalsDashboard>('/me/vitals/dashboard');
+    return data;
+  },
+
+  async getMyStreak(): Promise<Streak> {
+    const { data } = await api.get<Streak>('/me/streak');
     return data;
   },
 };

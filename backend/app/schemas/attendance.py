@@ -26,3 +26,11 @@ class AttendanceResponse(BaseModel):
     check_out_time: datetime | None
     date: date
     created_at: datetime
+
+
+class StreakResponse(BaseModel):
+    """A member's current continuous-day attendance streak."""
+
+    current_streak: int = Field(
+        description="Continuous days attended, ending today (or yesterday if not yet checked in today)"
+    )

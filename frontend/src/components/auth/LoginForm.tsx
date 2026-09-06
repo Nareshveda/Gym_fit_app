@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { GradientButton } from '../ui/GradientButton';
 import { Input } from '../ui/Input';
 import { useAuth } from '../../hooks/useAuth';
@@ -47,6 +47,9 @@ export function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
+      <Link to="/forgot-password" className="-mt-2 self-end text-sm text-primary hover:underline">
+        Forgot password?
+      </Link>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <GradientButton type="submit" disabled={isSubmitting} className="mt-2 w-full">
         {isSubmitting ? 'Signing in...' : 'Sign in'}

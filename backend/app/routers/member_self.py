@@ -19,7 +19,7 @@ from app.dependencies import get_current_member, get_db
 from app.models.attendance import Attendance
 from app.models.member import Member
 from app.models.member_vital import MemberVital
-from app.schemas.attendance import AttendanceResponse
+from app.schemas.attendance import AttendanceResponse, StreakResponse
 from app.schemas.member_vital import VitalResponse, VitalsDashboardResponse
 from app.services import attendance_service, vital_service
 
@@ -49,6 +49,16 @@ async def get_my_attendance(
     """List the logged-in member's own attendance history."""
     records = attendance_service.list_member_attendance(db, current_member.id)
     return [_to_attendance_response(record) for record in records]
+
+
+@router.get("/streak", response_model=StreakResponse)
+async def get_my_streak(
+    current_member: Member = Depends(get_current_member),
+    db: Session = Depends(get_db),
+) -> StreakResponse:
+    """The logged-in member's current continuous-day attendance streak."""
+    streak = attendance_service.get_member_streak(db, current_member.id)
+    return StreakResponse(current_streak=streak)
 
 
 @router.get("/vitals", response_model=list[VitalResponse])

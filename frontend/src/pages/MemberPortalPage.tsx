@@ -1,3 +1,4 @@
+import { Flame } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { LineChart } from '../components/ui/LineChart';
@@ -6,7 +7,7 @@ import { TextReveal } from '../components/ui/TextReveal';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../lib/extractErrorMessage';
 import { memberSelfService } from '../services/memberSelfService';
-import type { AttendanceRecord } from '../types/attendance';
+import type { AttendanceRecord, Streak } from '../types/attendance';
 import type { VitalsDashboard } from '../types/vital';
 
 function formatDate(value: string): string {
@@ -28,6 +29,7 @@ export default function MemberPortalPage() {
 
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [vitals, setVitals] = useState<VitalsDashboard | null>(null);
+  const [streak, setStreak] = useState<Streak | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -35,12 +37,14 @@ export default function MemberPortalPage() {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [attendanceData, vitalsData] = await Promise.all([
+      const [attendanceData, vitalsData, streakData] = await Promise.all([
         memberSelfService.getMyAttendance(),
         memberSelfService.getMyVitalsDashboard(),
+        memberSelfService.getMyStreak(),
       ]);
       setAttendance(attendanceData);
       setVitals(vitalsData);
+      setStreak(streakData);
     } catch (err) {
       setLoadError(extractErrorMessage(err, 'Could not load your data.'));
     } finally {
@@ -75,6 +79,18 @@ export default function MemberPortalPage() {
 
       {!isLoading && !loadError && (
         <div className="flex flex-col gap-6">
+          {streak && (
+            <GlassCard className="flex items-center gap-4">
+              <Flame className="h-8 w-8 shrink-0 text-orange-600" />
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  {streak.current_streak} {streak.current_streak === 1 ? 'day' : 'days'}
+                </p>
+                <p className="text-sm text-muted-foreground">Current attendance streak</p>
+              </div>
+            </GlassCard>
+          )}
+
           {vitals && (
             <>
               <div className="grid gap-4 sm:grid-cols-4">

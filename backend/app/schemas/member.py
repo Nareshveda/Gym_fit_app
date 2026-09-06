@@ -272,6 +272,10 @@ class MemberListItem(BaseModel):
         default=None,
         description="Name of the member's most recently assigned plan (admin-created), or null if none",
     )
+    current_streak: int = Field(
+        default=0,
+        description="Continuous days attended, ending today (or yesterday if not yet checked in today)",
+    )
 
 
 class MemberListResponse(BaseModel):

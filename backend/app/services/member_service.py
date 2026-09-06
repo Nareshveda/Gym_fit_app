@@ -20,6 +20,7 @@ from app.exceptions import ConflictError, NotFoundError
 from app.models.member import Member, MemberStatus, TrainingCategory
 from app.models.member_subscription import MemberSubscription
 from app.schemas.member import MemberCreate, MemberUpdate
+from app.services import attendance_service
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +171,14 @@ def list_members(
         .limit(limit)
         .all()
     )
+
+    # `current_streak` (exposed on MemberListItem) isn't a column, so it's
+    # computed here in one grouped query and stamped onto each ORM instance —
+    # `MemberListItem.model_validate` (from_attributes) then just reads it
+    # like any other attribute, the same trick `current_plan_name` relies on.
+    streaks = attendance_service.compute_streaks(db, [member.id for member in items])
+    for member in items:
+        member.current_streak = streaks.get(member.id, 0)
 
     logger.debug(
         "Listed members: search=%r status=%s page=%s limit=%s total=%s",

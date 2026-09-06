@@ -46,6 +46,11 @@ export interface AttendanceRecord {
   created_at: string;
 }
 
+/** Response for `GET /api/v1/me/streak`. */
+export interface Streak {
+  current_streak: number;
+}
+
 /** Payload for `POST /api/v1/attendance/check-in`. */
 export interface CheckInPayload {
   member_id: number;

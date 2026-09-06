@@ -40,6 +40,8 @@ export interface Member {
   status: MemberStatus;
   /** Name of the member's most recently assigned plan (the actual admin-created Plan), or null if none. */
   current_plan_name: string | null;
+  /** Continuous days attended, ending today (or yesterday if not yet checked in today). */
+  current_streak: number;
   created_at?: string;
   updated_at?: string;
 }

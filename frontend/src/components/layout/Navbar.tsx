@@ -12,15 +12,10 @@ export function Navbar() {
         <Link to="/">
           <img src="/brand/hsp-logo.png" alt="HSP — Harisportsperformance" className="h-8 w-auto rounded-md md:hidden" />
         </Link>
-        <span className="text-sm font-bold text-amber-500">
-          {user?.full_name ?? user?.email ?? 'Welcome'}
-        </span>
-      </div>
-      <div className="flex items-center gap-3">
         <Link
           to="/profile"
           aria-label="View profile"
-          className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary transition-opacity hover:opacity-80"
+          className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary transition-opacity hover:opacity-80"
         >
           {user?.avatar_url ? (
             <img
@@ -32,6 +27,11 @@ export function Navbar() {
             <UserIcon className="h-4 w-4" />
           )}
         </Link>
+        <span className="text-lg font-bold text-amber-500">
+          {user?.full_name ?? user?.email ?? 'Welcome'}
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={logout}>
           <LogOut className="h-4 w-4" />
           Sign out
