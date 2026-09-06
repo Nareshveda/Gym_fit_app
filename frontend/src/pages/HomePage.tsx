@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
-import { MeshBackground } from '../components/layout/MeshBackground';
 import { GlassCard } from '../components/ui/GlassCard';
 
 const highlights = [
@@ -9,13 +8,8 @@ const highlights = [
   { title: 'Progress You Can See', body: 'Vitals logged at every check-in, charted so you can watch the trend, not just the number.' },
 ];
 
-// One bold word per showcase slot, in order — vivid gradient + glow color pair each.
-const showcaseWords = [
-  { text: 'CONQUER', gradient: 'from-red-600 via-rose-500 to-amber-400', glow: '#ef4444' },
-  { text: 'FORGE', gradient: 'from-amber-500 via-orange-600 to-red-600', glow: '#f59e0b' },
-  { text: 'UNLEASH', gradient: 'from-cyan-400 via-blue-500 to-violet-600', glow: '#38bdf8' },
-  { text: 'RISE', gradient: 'from-pink-500 via-rose-400 to-orange-400', glow: '#fb7185' },
-];
+// One bold word per showcase slot, in order.
+const showcaseWords = ['CONQUER', 'FORGE', 'UNLEASH', 'RISE'];
 
 // Drop up to 4 images/videos into src/assets/home-media/ and they show up here
 // automatically after the next build — no code change needed. Files are shown
@@ -41,20 +35,21 @@ while (mediaShowcase.length < 4) {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
-      <MeshBackground />
+    <div className="min-h-screen bg-gray-100">
       <PublicNavbar />
 
-      <main className="mx-auto flex max-w-6xl flex-col items-center gap-10 px-6 py-20 text-center">
+      <main className="flex flex-col items-center gap-10 py-12 text-center">
         <motion.img
           src="/brand/hsp-logo-white.png"
           alt="HSP — Harisportsperformance — Move. Build. Sprint."
-          className="w-full max-w-xs rounded-2xl shadow-xl"
+          className="-mt-4 w-full max-w-[180px] rounded-2xl shadow-xl"
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
+        {/* Full page width — a plain block-level 100% avoids the 100vw-vs-scrollbar
+            mismatch that a `left-1/2 + w-screen` full-bleed trick would introduce. */}
+        <div className="grid w-full grid-cols-2 gap-1 sm:grid-cols-4">
           {mediaShowcase.map((item, index) => {
             const word = showcaseWords[index];
             return (
@@ -85,13 +80,16 @@ export default function HomePage() {
 
                 {word && (
                   <motion.span
-                    className={`animate-gradient-x animate-glow-pulse absolute inset-x-2 top-3 whitespace-nowrap bg-gradient-to-r bg-clip-text text-center font-black uppercase leading-none tracking-tight text-transparent ${word.gradient}`}
-                    style={{ fontSize: 'clamp(1.5rem, 6vw, 3.25rem)', '--glow-color': word.glow } as React.CSSProperties}
+                    className="absolute inset-x-2 top-3 whitespace-nowrap text-center font-black italic uppercase leading-none tracking-tight text-transparent"
+                    style={{
+                      fontSize: 'clamp(1.5rem, 6vw, 3.25rem)',
+                      WebkitTextStroke: '2px white',
+                    }}
                     initial={{ opacity: 0, y: -24, scale: 0.85 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 + index * 0.2, ease: 'easeOut' }}
                   >
-                    {word.text}
+                    {word}
                   </motion.span>
                 )}
               </div>
@@ -99,7 +97,7 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="mt-10 grid w-full gap-6 sm:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-6xl gap-6 px-6 sm:grid-cols-3">
           {highlights.map((item) => (
             <GlassCard key={item.title} className="text-left">
               <h3 className="mb-2 text-lg font-semibold text-foreground">{item.title}</h3>
