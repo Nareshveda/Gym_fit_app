@@ -58,7 +58,7 @@ export default function HomePage() {
           {mediaShowcase.map((item, index) => {
             const word = showcaseWords[index];
             return (
-              <div key={item.src || `placeholder-${index}`} className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md">
+              <div key={item.src || `placeholder-${index}`} className="group relative aspect-[3/5] w-full overflow-hidden rounded-2xl shadow-md">
                 {item.src ? (
                   item.isVideo ? (
                     <video
@@ -81,7 +81,7 @@ export default function HomePage() {
                   <div className="h-full w-full bg-gradient-brand" />
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/15 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/80 to-transparent" />
 
                 {word && (
                   <motion.span
