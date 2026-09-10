@@ -6,9 +6,10 @@ const ServiceCard: React.FC<{
   label: string;
   title: string;
   tagline: string;
+  visualTagline?: string;
   cta: { text: string; href?: string };
   theme?: string;
-}> = ({ image, label, title, tagline, cta, theme }) => {
+}> = ({ image, label, title, tagline, visualTagline, cta, theme }) => {
   return (
     <section
       className={`relative flex-1 overflow-hidden rounded-2xl shadow-2xl bg-black`}>
@@ -24,6 +25,9 @@ const ServiceCard: React.FC<{
         <span className="text-sm font-bold tracking-widest text-white/90">{label}</span>
         <h2 className="max-w-lg text-3xl font-extrabold leading-tight sm:text-4xl">{title}</h2>
         <p className="max-w-prose text-sm text-white/90">{tagline}</p>
+        {visualTagline && (
+          <p className="mt-2 text-sm italic text-white/80">{visualTagline}</p>
+        )}
 
         <div className="mt-4">
           <GradientButton onClick={() => (window.location.href = cta.href || '#')}>{cta.text}</GradientButton>
@@ -57,6 +61,7 @@ export default function ServicesPage() {
             label="GROUP TRAINING"
             title={"Group’Dude — Train Together. Rise Together."}
             tagline={"High-energy group workouts, powerful motivation, and a community that keeps you moving. Sweat, laugh, push your limits, and grow stronger together."}
+            visualTagline={"Group’Dude: \u201cMore people. More energy. More progress.\u201d"}
             cta={{ text: 'Join the Crew', href: '/register' }}
             theme="group"
           />
@@ -66,15 +71,12 @@ export default function ServicesPage() {
             label="PERSONAL COACHING"
             title={'Premium — Your Goal. Your Plan. Your Transformation.'}
             tagline={"Experience personalized coaching, tailored training, and focused support designed around your body, goals, and ambition. For those ready to go beyond ordinary."}
+            visualTagline={"Premium: \u201cPrecision training for extraordinary goals.\u201d"}
             cta={{ text: 'Go Premium', href: '/contact' }}
             theme="premium"
           />
         </main>
 
-        <section className="mt-10 text-center text-sm text-gray-500">
-          <p className="italic">Group’Dude: “More people. More energy. More progress.”</p>
-          <p className="mt-1 italic">Premium: “Precision training for extraordinary goals.”</p>
-        </section>
       </div>
     </div>
   );
