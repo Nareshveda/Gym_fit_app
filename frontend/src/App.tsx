@@ -28,6 +28,11 @@ import PlansPage from './pages/PlansPage';
 import ProfilePage from './pages/ProfilePage';
 import RegisterPage from './pages/RegisterPage';
 
+// Marketing pages
+import ServicesPage from './pages/ServicesPage';
+import GalleryPage from './pages/GalleryPage';
+import AboutPage from './pages/AboutPage';
+
 export default function App() {
   return (
     <AuthProvider>
@@ -36,6 +41,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
