@@ -5,16 +5,15 @@ Revises: 533a41703ddc
 Create Date: 2026-08-31 18:10:00.000000
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
 revision: str = '8f4a2c19d6e3'
-down_revision: Union[str, Sequence[str], None] = '533a41703ddc'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = '533a41703ddc'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -30,4 +29,3 @@ def downgrade() -> None:
     # requires rebuilding the type (and touching every column that uses it).
     # Not worth it for a downgrade path that's unlikely to ever run; any rows
     # already using 'half_yearly' would block it anyway.
-    pass

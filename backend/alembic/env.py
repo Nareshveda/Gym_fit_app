@@ -19,7 +19,7 @@ from alembic import context
 # invoked from (alembic.ini also sets prepend_sys_path = .).
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.models import Base  # noqa: E402  (import after sys.path fix-up)
+from app.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -33,7 +33,7 @@ try:
     from app.config import settings
 
     database_url = settings.DATABASE_URL
-except Exception:  # pragma: no cover - defensive fallback
+except Exception:  # noqa: BLE001 -- pragma: no cover - defensive fallback
     database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
