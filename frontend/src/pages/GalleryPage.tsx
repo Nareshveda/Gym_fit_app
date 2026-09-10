@@ -1,4 +1,3 @@
-import React from 'react';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 
 const placeholder = [

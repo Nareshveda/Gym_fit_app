@@ -1,4 +1,3 @@
-import React from 'react';
 import { GradientButton } from '../components/ui/GradientButton';
 import { PublicNavbar } from '../components/layout/PublicNavbar';
 
