@@ -3,10 +3,12 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { GlassCard } from '../components/ui/GlassCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { TextReveal } from '../components/ui/TextReveal';
+import { PublicNavbar } from '../components/layout/PublicNavbar';
 
 export default function LoginPage() {
   return (
     <PageWrapper className="bg-gray-100">
+      <PublicNavbar />
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
         <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-primary">
           ← Back to Home

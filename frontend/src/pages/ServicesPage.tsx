@@ -1,5 +1,6 @@
 import React from 'react';
 import { GradientButton } from '../components/ui/GradientButton';
+import { PublicNavbar } from '../components/layout/PublicNavbar';
 
 const ServiceCard: React.FC<{
   image: string;
@@ -48,6 +49,7 @@ const ServiceCard: React.FC<{
 export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <PublicNavbar />
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase text-muted-foreground">Our Services</p>

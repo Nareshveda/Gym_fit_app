@@ -1,4 +1,5 @@
 import React from 'react';
+import { PublicNavbar } from '../components/layout/PublicNavbar';
 
 const placeholder = [
   '/assets/gallery-01.jpg',
@@ -12,6 +13,7 @@ const placeholder = [
 export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <PublicNavbar />
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase text-muted-foreground">Gallery</p>
