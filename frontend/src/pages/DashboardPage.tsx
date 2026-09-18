@@ -49,11 +49,11 @@ function revenueTrendHint(thisMonth: string, lastMonth: string): string {
   return `${direction} ${Math.abs(pctChange).toFixed(0)}% vs last month (${formatINR(lastMonth)})`;
 }
 
-// Orangish-yellow surface (vs. the app's usual white glass cards) so the
-// Dashboard's data cards read as a distinct, livelier zone; icons go on a
-// radiant green badge for contrast against that warm background.
-const DASHBOARD_CARD_CLASSES = 'border-amber-200 bg-gradient-to-br from-amber-100 to-orange-200';
-const DASHBOARD_ICON_CLASSES = 'text-green-600 drop-shadow-[0_0_6px_rgba(34,197,94,0.5)]';
+// Cool blue/teal surface (vs. the app's usual white glass cards) so the
+// Dashboard's data cards read as a distinct, calmer zone; icons use a
+// deeper cyan for contrast against that cool background.
+const DASHBOARD_CARD_CLASSES = 'border-sky-200 bg-gradient-to-br from-sky-100 to-cyan-200';
+const DASHBOARD_ICON_CLASSES = 'text-cyan-700 drop-shadow-[0_0_6px_rgba(8,145,178,0.5)]';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);

@@ -18,17 +18,20 @@ export function StatCard({ label, value, icon: Icon, hint, to }: StatCardProps) 
     <Card
       variant="glass"
       className={cn(
-        'flex items-start justify-between gap-4 border-amber-200 bg-gradient-to-br from-amber-100 to-orange-200',
+        'flex h-full items-start justify-between gap-4 border-sky-200 bg-gradient-to-br from-sky-100 to-cyan-200',
         to && 'transition-shadow hover:shadow-lg hover:shadow-primary/10',
       )}
     >
       <div className="flex flex-col gap-1">
         <span className="text-sm font-medium text-muted-foreground">{label}</span>
         <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
-        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+        {/* Always rendered (even without a hint) so every StatCard reserves
+            the same third line — otherwise cards with a hint (Revenue,
+            Attendance) are visibly taller than the ones without one. */}
+        <span className="text-xs text-muted-foreground">{hint ?? ' '}</span>
       </div>
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white shadow-[0_0_14px_rgba(34,197,94,0.55)]"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-[0_0_14px_rgba(8,145,178,0.55)]"
       >
         <Icon className="h-5 w-5" />
       </div>
