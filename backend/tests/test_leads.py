@@ -21,6 +21,7 @@ def test_anyone_can_submit_a_lead(client):
     body = response.json()
     assert body["full_name"] == "Priya Kumar"
     assert body["note"] == "Interested in group training."
+    assert body["contacted"] is False
 
 
 def test_submitting_a_lead_requires_no_note(client):
@@ -62,3 +63,42 @@ def test_admin_can_list_leads_most_recent_first(client, admin_headers):
     assert response.status_code == 200
     names = [lead["full_name"] for lead in response.json()]
     assert names == ["Second Lead", "First Lead"]
+
+
+def test_update_lead_requires_authentication(client):
+    lead = client.post("/api/v1/leads/", json=VALID_LEAD).json()
+    response = client.patch(f"/api/v1/leads/{lead['id']}", json={"contacted": True})
+    assert response.status_code == 401
+
+
+@pytest.mark.parametrize("headers_fixture", ["staff_headers", "trainer_headers"])
+def test_non_admin_roles_cannot_update_lead(client, headers_fixture, request, admin_headers):
+    lead = client.post("/api/v1/leads/", json=VALID_LEAD).json()
+    headers = request.getfixturevalue(headers_fixture)
+    response = client.patch(
+        f"/api/v1/leads/{lead['id']}", json={"contacted": True}, headers=headers
+    )
+    assert response.status_code == 403
+
+
+def test_admin_can_mark_lead_contacted(client, admin_headers):
+    lead = client.post("/api/v1/leads/", json=VALID_LEAD).json()
+
+    response = client.patch(
+        f"/api/v1/leads/{lead['id']}", json={"contacted": True}, headers=admin_headers
+    )
+    assert response.status_code == 200
+    assert response.json()["contacted"] is True
+
+    response = client.patch(
+        f"/api/v1/leads/{lead['id']}", json={"contacted": False}, headers=admin_headers
+    )
+    assert response.status_code == 200
+    assert response.json()["contacted"] is False
+
+
+def test_update_nonexistent_lead_returns_404(client, admin_headers):
+    response = client.patch(
+        "/api/v1/leads/999999", json={"contacted": True}, headers=admin_headers
+    )
+    assert response.status_code == 404

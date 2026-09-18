@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, require_role
 from app.models.lead import Lead
-from app.schemas.lead import LeadCreate, LeadResponse
+from app.schemas.lead import LeadCreate, LeadResponse, LeadUpdate
 from app.services import lead_service
 
 logger = logging.getLogger(__name__)
@@ -39,3 +39,14 @@ async def list_leads(
 ) -> list[Lead]:
     """List every submitted inquiry, most recent first (owner/admin only)."""
     return lead_service.list_leads(db)
+
+
+@router.patch("/{lead_id}", response_model=LeadResponse)
+async def update_lead(
+    lead_id: int,
+    payload: LeadUpdate,
+    db: Session = Depends(get_db),
+    _current_user=Depends(require_role("owner", "admin")),
+) -> Lead:
+    """Mark a lead as contacted/not contacted (owner/admin only)."""
+    return lead_service.update_lead(db, lead_id, payload)

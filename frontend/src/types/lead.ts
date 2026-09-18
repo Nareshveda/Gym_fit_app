@@ -7,6 +7,7 @@ export interface Lead {
   whatsapp_number: string;
   preferred_time: string;
   note: string | null;
+  contacted: boolean;
   created_at: string;
 }
 
@@ -17,4 +18,9 @@ export interface LeadCreatePayload {
   whatsapp_number: string;
   preferred_time: string;
   note?: string | null;
+}
+
+/** Payload for `PATCH /api/v1/leads/{id}`. */
+export interface LeadUpdatePayload {
+  contacted: boolean;
 }

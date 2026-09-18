@@ -49,6 +49,12 @@ class LeadCreate(BaseModel):
         return value
 
 
+class LeadUpdate(BaseModel):
+    """Payload to mark whether a lead has been contacted (owner/admin only)."""
+
+    contacted: bool
+
+
 class LeadResponse(BaseModel):
     """A submitted inquiry, as reviewed by staff/owner in the admin area."""
 
@@ -60,4 +66,5 @@ class LeadResponse(BaseModel):
     whatsapp_number: str
     preferred_time: str
     note: str | None
+    contacted: bool
     created_at: datetime

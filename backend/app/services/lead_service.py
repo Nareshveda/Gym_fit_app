@@ -6,8 +6,9 @@ import logging
 
 from sqlalchemy.orm import Session
 
+from app.exceptions import NotFoundError
 from app.models.lead import Lead
-from app.schemas.lead import LeadCreate
+from app.schemas.lead import LeadCreate, LeadUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -44,3 +45,18 @@ def list_leads(db: Session) -> list[Lead]:
     ordering is always deterministic.
     """
     return db.query(Lead).order_by(Lead.created_at.desc(), Lead.id.desc()).all()
+
+
+def update_lead(db: Session, lead_id: int, data: LeadUpdate) -> Lead:
+    """Mark a lead as contacted (or not) once staff have followed up.
+
+    Raises:
+        NotFoundError: if no lead with `lead_id` exists.
+    """
+    lead = db.get(Lead, lead_id)
+    if lead is None:
+        raise NotFoundError("Lead")
+    lead.contacted = data.contacted
+    db.commit()
+    db.refresh(lead)
+    return lead

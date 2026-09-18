@@ -30,6 +30,17 @@ export default function AdminLeadsPage() {
     void load();
   }, [load]);
 
+  const handleToggleContacted = async (lead: Lead) => {
+    const nextContacted = !lead.contacted;
+    setLeads((prev) => prev.map((item) => (item.id === lead.id ? { ...item, contacted: nextContacted } : item)));
+    try {
+      await leadService.update(lead.id, { contacted: nextContacted });
+    } catch (err) {
+      setLeads((prev) => prev.map((item) => (item.id === lead.id ? { ...item, contacted: lead.contacted } : item)));
+      window.alert(extractErrorMessage(err, 'Could not update this inquiry.'));
+    }
+  };
+
   return (
     <PageWrapper>
       <div className="mb-6 flex items-center justify-between">
@@ -57,6 +68,7 @@ export default function AdminLeadsPage() {
                 <TableHead>Preferred time</TableHead>
                 <TableHead>Note</TableHead>
                 <TableHead>Submitted</TableHead>
+                <TableHead>Contacted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -71,6 +83,15 @@ export default function AdminLeadsPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(lead.created_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={lead.contacted}
+                      onChange={() => void handleToggleContacted(lead)}
+                      aria-label={`Mark ${lead.full_name} as contacted`}
+                      className="h-4 w-4 rounded border-input accent-primary"
+                    />
                   </TableCell>
                 </TableRow>
               ))}
