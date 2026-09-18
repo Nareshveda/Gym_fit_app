@@ -178,7 +178,11 @@ def list_members(
     # like any other attribute, the same trick `current_plan_name` relies on.
     streaks = attendance_service.compute_streaks(db, [member.id for member in items])
     for member in items:
-        member.current_streak = streaks.get(member.id, 0)
+        # Not a real attribute on Member — mypy can't see a dynamically
+        # stamped one, and giving it a bare class-level annotation instead
+        # trips SQLAlchemy's declarative mapper (it wants Mapped[]/ClassVar[]
+        # on every annotated attribute).
+        member.current_streak = streaks.get(member.id, 0)  # type: ignore[attr-defined]
 
     logger.debug(
         "Listed members: search=%r status=%s page=%s limit=%s total=%s",
