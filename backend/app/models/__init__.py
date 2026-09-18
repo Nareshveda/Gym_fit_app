@@ -12,6 +12,7 @@ from app.models.attendance import Attendance
 from app.models.base import Base, TimestampMixin
 from app.models.equipment import Equipment, equipment_locations
 from app.models.exercise import Exercise, ExerciseCategory
+from app.models.lead import Lead
 from app.models.location import Location
 from app.models.member import Member, MemberStatus, TrainingCategory
 from app.models.member_subscription import MemberSubscription, SubscriptionStatus
@@ -31,6 +32,7 @@ __all__ = [
     "Equipment",
     "Exercise",
     "ExerciseCategory",
+    "Lead",
     "Location",
     "Member",
     "MemberStatus",

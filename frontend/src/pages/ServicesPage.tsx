@@ -64,7 +64,7 @@ export default function ServicesPage() {
             title={"Group’Dude — Train Together. Rise Together."}
             tagline={"High-energy group workouts, powerful motivation, and a community that keeps you moving. Sweat, laugh, push your limits, and grow stronger together."}
             visualTagline={"Group’Dude: \u201cMore people. More energy. More progress.\u201d"}
-            cta={{ text: 'Join the Crew', href: '/register' }}
+            cta={{ text: 'Join the Crew', href: '/join' }}
             theme="group"
           />
 

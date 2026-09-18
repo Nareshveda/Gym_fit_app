@@ -61,6 +61,9 @@ export default function AdminPage() {
           <Link to="/admin/locations">
             <Button variant="outline">Locations</Button>
           </Link>
+          <Link to="/admin/leads">
+            <Button variant="outline">Join the Crew Inquiries</Button>
+          </Link>
           <Link to="/inventory">
             <Button variant="outline">Inventory</Button>
           </Link>

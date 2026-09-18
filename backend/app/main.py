@@ -74,6 +74,7 @@ from app.routers import (
     auth,
     dashboard,
     equipment,
+    leads,
     locations,
     member_self,
     member_vitals,
@@ -100,3 +101,4 @@ app.include_router(staff_attendance.router)
 app.include_router(locations.router)
 app.include_router(equipment.router)
 app.include_router(member_self.router)
+app.include_router(leads.router)

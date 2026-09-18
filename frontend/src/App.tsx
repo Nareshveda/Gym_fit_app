@@ -4,6 +4,7 @@ import { IstClock } from './components/layout/IstClock';
 import { MemberPortalLayout } from './components/layout/MemberPortalLayout';
 import { MemberProtectedRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import AdminLeadsPage from './pages/AdminLeadsPage';
 import AdminLocationsPage from './pages/AdminLocationsPage';
 import AdminPage from './pages/AdminPage';
 import AdminStaffCreatePage from './pages/AdminStaffCreatePage';
@@ -14,6 +15,7 @@ import DashboardPage from './pages/DashboardPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import HomePage from './pages/HomePage';
 import InventoryPage from './pages/InventoryPage';
+import JoinCrewPage from './pages/JoinCrewPage';
 import LoginPage from './pages/LoginPage';
 import MemberDetailPage from './pages/MemberDetailPage';
 import MemberEditPage from './pages/MemberEditPage';
@@ -44,6 +46,7 @@ export default function App() {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/join" element={<JoinCrewPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -86,6 +89,7 @@ export default function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/staff/new" element={<AdminStaffCreatePage />} />
             <Route path="/admin/locations" element={<AdminLocationsPage />} />
+            <Route path="/admin/leads" element={<AdminLeadsPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
