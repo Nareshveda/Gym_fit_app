@@ -41,7 +41,7 @@ export function PublicNavbar() {
         <div className="flex items-center gap-3">
           {/* WhatsApp quick contact button */}
           <a
-            href="https://wa.me/919999999999"
+            href="https://wa.me/16505166001"
             target="_blank"
             rel="noreferrer"
             aria-label="Contact us on WhatsApp"
