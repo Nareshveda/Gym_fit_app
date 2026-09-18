@@ -13,11 +13,11 @@ _PHONE_PATTERN = re.compile(r"^\+?[0-9][0-9 \-]{5,20}[0-9]$")
 _NOTE_MAX_WORDS = 500
 
 
-def _validate_phone(value: str, field_name: str) -> str:
+def _validate_phone(value: str, field_name: str | None) -> str:
     digits = re.sub(r"[^0-9]", "", value)
     if len(digits) < 7 or len(digits) > 15 or not _PHONE_PATTERN.match(value):
         raise ValueError(
-            f"{field_name} must be 7-15 digits, optionally with +, spaces, or hyphens"
+            f"{field_name or 'value'} must be 7-15 digits, optionally with +, spaces, or hyphens"
         )
     return value
 
